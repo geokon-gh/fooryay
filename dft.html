@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Discrete Fourier Transform</title>
+<!-- 2019-10-26 六 20:08 -->
+<meta  charset="utf-8">
+<meta  name="generator" content="Org-mode">
+<meta  name="author" content="George Kontsevich">
+<meta  name="description" content="DFT in MATLAB/Octave"
+>
+<link rel="stylesheet" type="text/css" href="../web/worg.css" />
+<link rel="shortcut icon" href="../web/panda.svg" type="image/x-icon">
+</head>
+<body>
+<div id="content">
+<h1 class="title">Discrete Fourier Transform</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Goal</a></li>
+<li><a href="#sec-2">Complex numbers</a></li>
+<li><a href="#sec-3">Complex Conjugates</a></li>
+<li><a href="#sec-4">The Unit Circle</a></li>
+<li><a href="#sec-5">Euler's Formula</a></li>
+<li><a href="#sec-6">The roots of unity</a></li>
+<li><a href="#sec-7">Fourier series</a></li>
+<li><a href="#sec-8">Fourier Vectors</a></li>
+<li><a href="#sec-9">Fourier Matrix</a></li>
+<li><a href="#sec-10">Frequency Space?</a>
+<ul>
+<li><a href="#sec-10-1">How does a sinusoidal look in this basis?</a></li>
+<li><a href="#sec-10-2">How does a phase shift look in this basis?</a></li>
+<li><a href="#sec-10-3">How does a frequency who's period isn't a whole fraction of the sample rate come out in this basis?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Goal</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Using the multiplicative properties of complex numbers we construct an easily-invertible orthogonal basis in which periodic components of our input become apparant. This basis allows us to carry out a class of operations that are numerically intensive in the standard basis but much quicker in the frequency-basis.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-octave">inline code examples are in MATLAB<span style="color: #006FE0;">/</span>Octave
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Complex numbers</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Complex numbers are of the form <b>a+ib</b> where <b>i= &radic;(-1)</b> and <b>a</b> and <b>b</b> are known as the real and imaginary components of the complex number. The pair (a,b) are often referred to as a point on the complex plane. However the implicit analogy to 2D coordinates is a bit probematic
+</p>
+
+<p>
+To envision a complex plane we treat the <i>real</i> component <b>a</b> acting as the <i>x</i> and the <i>imaginary</i> component <b>b</b> acting as the <i>y</i>.
+Like 2D coordinates, we can add/translate them and they can be scaled
+</p>
+<ul class="org-ul">
+<li>(a+ib) + (c+id) = (a+c) + i(bd)
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">1<span style="color: #006FE0;">+</span>5i <span style="color: #006FE0;">+</span> 3<span style="color: #006FE0;">+</span>2j
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">4+7i
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>c * (a+ib) = ca +icb 
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">10 <span style="color: #006FE0;">*</span> (1<span style="color: #006FE0;">+</span>5i)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">10+50i
+</pre>
+</div>
+
+<p>
+However unlike 2D [x,y] coordinates, complex numbers can be multiplied:
+</p>
+<ul class="org-ul">
+<li>(a+ib) * (c+id) = (ac-bd) + i(ad+bc)
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">(1<span style="color: #006FE0;">+</span>2i) <span style="color: #006FE0;">*</span> (3<span style="color: #006FE0;">+</span>4j)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">-5+10i
+</pre>
+</div>
+
+<p>
+Normally if we are given 2 coordinates [x<sub>0</sub>,y<sub>0</sub>] and [x<sub>1</sub>,y<sub>1</sub>] we never ask ourselves to multiple them because multiplication between two points is simply no a defined operation. However in the complex-number case this operation comes naturally and it generates a new complex number
+</p>
+
+<blockquote>
+<p>
+Note: You can do a dot and cross product between two [x,y] coordinates but:
+</p>
+<ul class="org-ul">
+<li>[x<sub>0</sub>,y<sub>0</sub>] &bull; [x<sub>1</sub>,y<sub>1</sub>] &rarr; <i>scalar</i>
+</li>
+<li>[x<sub>0</sub>,y<sub>0</sub>] &times; [x<sub>1</sub>,y<sub>1</sub>] &rarr; <i>requires an extra <code>z</code> dimension</i>
+</li>
+</ul>
+</blockquote>
+
+<p>
+So points in the complex plane have this extra "feature" so it's important to not stretch the 2D coordinate interpretation too far. As far as I can tell there is no easy way to visualize what the result of a multiplication looks like in the general case.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Complex Conjugates</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Just like points and vectors, complex numbers have a "length" or magnitude
+</p>
+<ul class="org-ul">
+<li>||a+ib|| = &radic;(a<sup>2</sup>+b<sup>2</sup>}
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">abs(3<span style="color: #006FE0;">+</span>4i)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">5
+</pre>
+</div>
+
+<p>
+And just like for points and vectors, this norm is a real scalar value
+</p>
+
+<p>
+The square of the norm is ofcourse just <i>a<sup>2</sup>+b<sup>2</sup></i> and this often comes up in things like the inner product.  For instance given a vector [x y] we can take its inner product with itself [x y][x y]<sup>T</sup> to get its norm-squared. In the trivial <code>1x1</code> case this will be [z][z]<sup>T</sup> which is z<sup>2</sup>.
+</p>
+
+<p>
+In the complex case where <i>z</i> is a complex number <i>a+ib</i> then we'd get <i>z*z<sup>T</sup>=z<sup>2</sup>=(a+ib)<sup>2</sup>=a<sup>2</sup>+i2ab-b<sup>2</sup></i> which is non-real and doesn't match our magnitude-squared. So using the transpose no longer works. But this norm-squared is still easy to express as a product
+</p>
+<ul class="org-ul">
+<li>a<sup>2</sup>+b<sup>2</sup> = (a+ib)(a-ib)
+</li>
+</ul>
+<p>
+With <i>a-ib</i> known as the <i>complex conjugate</i> of <i>a+ib</i>
+</p>
+<div class="org-src-container">
+
+<pre class="src src-octave">conj(3<span style="color: #006FE0;">+</span>4j)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">3-4i
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">v <span style="color: #006FE0;">=</span> 3<span style="color: #006FE0;">+</span>4i
+v<span style="color: #006FE0;">*</span>conj(v)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">25
+</pre>
+</div>
+
+<p>
+And what's convenient is that this actually still works for real values. Since a real value <i>a</i> can be written as the complex number a+i*0 we can write its complex conjugate as a-i*0 and see that it's norm is
+</p>
+<ul class="org-ul">
+<li>a<sup>2</sup>+0<sup>2</sup> = (a+i0)(a-i0) = a<sup>2</sup>
+</li>
+</ul>
+<p>
+Which is just the absolute value of <i>a</i> squared
+</p>
+<div class="org-src-container">
+
+<pre class="src src-octave">v <span style="color: #006FE0;">=</span> 3
+v<span style="color: #006FE0;">*</span>conj(v)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">9
+</pre>
+</div>
+
+<p>
+So instead of doing a transpose we need to introduce a new transposition called the Hermitian transpose
+</p>
+<ul class="org-ul">
+<li>[a+ib c+id]<sup>*</sup> = [a-ib c-d]<sup>T</sup>
+</li>
+</ul>
+<p>
+The Hermitian transpose is denoted with a star. It simply take a normal transpose and replaces the terms with their complex conjugates.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-octave">v <span style="color: #006FE0;">=</span> [3<span style="color: #006FE0;">+</span>4i 6<span style="color: #006FE0;">+</span>8i]
+v<span style="color: #006FE0;">'</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 3-4i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 6-8i |</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">v <span style="color: #006FE0;">=</span> [3<span style="color: #006FE0;">+</span>4i 6<span style="color: #006FE0;">+</span>8i]
+v<span style="color: #006FE0;">*</span>v<span style="color: #006FE0;">'</span>
+</pre>
+</div>
+
+<pre class="example">
+125
+</pre>
+
+<p>
+When the vector values are all real it will behave exactly like a transpose and when the values are complex, it will take their conjugates and give us scalar/real values of each complex values' magnitude
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">The Unit Circle</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Notice that when the <i>norm-squared</i> is equal to <i>1</i> the magnitude is also equal to <i>1</i>. All these special points who's length is equal to <i>1</i> lie on what's called the <i>unit cirle</i>. If we start with two complex numbers <i>a+ib</i> and <i>c+id</i> then
+</p>
+<ul class="org-ul">
+<li>(a<sup>2</sup>+b<sup>2</sup>)<sup>1/2</sup> = 1 <i>and therefore</i> a<sup>2</sup>+b<sup>2</sup> = 1
+</li>
+<li>(c<sup>2</sup>+d<sup>2</sup>)<sup>1/2</sup> = 1 <i>and therefore</i> c<sup>2</sup>+d<sup>2</sup> = 1
+</li>
+</ul>
+<p>
+As we saw, their product is the point <i>(ac-bd) + i(ad+bc)</i> and its length is also equal to 1. Proof:
+</p>
+<ul class="org-ul">
+<li>[ (ac-bd)<sup>2</sup> + (ad+bc)<sup>2</sup> ]<sup>(1/2)</sup>
+</li>
+<li>[ a<sup>2</sup>c<sup>2</sup>-2acbd+b<sup>2</sup>d<sup>2</sup>+a<sup>2</sup>d<sup>2</sup>+2adbc+b<sup>2</sup>c<sup>2</sup> ]<sup>1/2</sup>
+</li>
+<li>[ a<sup>2</sup>c<sup>2</sup>+b<sup>2</sup>b<sup>2</sup>+a<sup>2</sup>d<sup>d</sup>+b<sup>2</sup>c<sup>2</sup> ]<sup>1/2</sup>
+</li>
+<li>[ c<sup>2</sup>(a<sup>2</sup>+b<sup>2</sup>) + d<sup>2</sup>(a<sup>2</sup>+b<sup>2</sup>) ]<sup>(1/2)</sup>
+</li>
+</ul>
+<p>
+Through some subsitution we see that the length of the product is also equal to <i>1</i>
+</p>
+
+<p>
+This tells us that while the general complex product is hard to think about, we know that least the product of any two points on the unit circle gives us a new point on the unit circle
+</p>
+<div class="org-src-container">
+
+<pre class="src src-octave">v <span style="color: #006FE0;">=</span> sqrt(0.2)<span style="color: #006FE0;">+</span>sqrt(0.8)<span style="color: #006FE0;">*</span>i
+w <span style="color: #006FE0;">=</span> sqrt(0.69)<span style="color: #006FE0;">+</span>sqrt(0.31)<span style="color: #006FE0;">*</span>i
+abs(v<span style="color: #006FE0;">*</span>w)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">0.9999999999999999
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Euler's Formula</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+To make the multiplicative rotations more natural we would like to start describing the points in terms of polar coordinates. The initial conversion is straightforward:
+</p>
+<ul class="org-ul">
+<li>radius = r = (a<sup>2</sup>+b<sup>2</sup>)<sup>1/2</sup>
+</li>
+<li>angle = &theta; = atan(b/a)
+</li>
+</ul>
+<p>
+Going back is also easy
+</p>
+<ul class="org-ul">
+<li>a = rcos(&theta;)
+</li>
+<li>b = rsin(&theta;)
+</li>
+</ul>
+<p>
+So the complex number <i>z=a+ib</i> can now be defined in terms of <i>r</i> and <i>theta</i> and we can rewrite <i>a+ib</i> as:
+</p>
+<ul class="org-ul">
+<li>z = rcos(&theta;) + irsin(&theta;)
+</li>
+</ul>
+
+<p>
+A more compact representation of this is given by <b>Euler's formula</b>:
+</p>
+<ul class="org-ul">
+<li>re<sup>i&theta;</sup>=rcos(&theta;)+irsin(&theta;)
+</li>
+</ul>
+<p>
+A complete proof of this identity is a bit long, but the steps are:
+</p>
+<ul class="org-ul">
+<li>Show that the derivative of e<sup>x</sup> is e<sup>x</sup> (it's the only equation of the form a<sup>x</sup> that have this "stable" property)
+</li>
+<li>Using the chain rule we see that the <i>n<sup>th</sup></i> derivative of e<sup>ix</sup> will be equal to i<sup>n</sup>e<sup>ix</sup>
+</li>
+<li>i<sup>n</sup> is a cyclic function with half its terms imaginary and half real
+</li>
+<li>We then describe e<sup>i&theta;</sup> around <i>0</i> in terms of the Taylor/Maclaurin Series
+</li>
+<li>Half the terms of the Taylor/Maclaurin Series will be imaginary and half real. 
+</li>
+<li>The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">123<span style="color: #006FE0;">*</span>exp(i<span style="color: #006FE0;">*</span>0.321)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">116.7172063656597+38.80842354690544i
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">123<span style="color: #006FE0;">*</span>cos(0.321)<span style="color: #006FE0;">+</span>i<span style="color: #006FE0;">*</span>123<span style="color: #006FE0;">*</span>sin(0.321)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">116.7172063656597+38.80842354690544i
+</pre>
+</div>
+
+<p>
+Using the trigonometric properties (which are self evident if you think of the graph and even/odd functions)
+</p>
+<ul class="org-ul">
+<li>sin(-&theta;)=-sin(&theta;)
+</li>
+<li>cos(-&theta;)= cos(&theta;)
+</li>
+</ul>
+<p>
+We can rewrite the complex conjugate as
+</p>
+<ul class="org-ul">
+<li>a - ib
+</li>
+<li>r cos(&theta;) - <i>i</i> r sin(&theta;)
+</li>
+<li>r cos(-&theta;) + <i>i</i> r sin{-&theta;) = <b>re<sup>-&theta;</sup></b>
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">123<span style="color: #006FE0;">*</span>exp(<span style="color: #006FE0;">-</span>i<span style="color: #006FE0;">*</span>0.321)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">116.7172063656597-38.80842354690544i
+</pre>
+</div>
+
+<p>
+As we just saw in the previous section, the radius in the products of points on the unit cirle is always equal to one. so a polar coordinate system will bring the problem down from 2 variables, <i>a</i> and <i>b</i>, to just one constant <i>radius</i> of size <i>1</i> and one variable <i>angle</i> &theta;. The points on the unit circle can all be written down as:
+</p>
+<ul class="org-ul">
+<li>e<sup>i&theta;</sup>
+</li>
+</ul>
+<p>
+And we can say the magnitude of the product of two of these is always equal to <i>1</i>
+</p>
+<ul class="org-ul">
+<li>|| e<sup><i>i</i>&theta;</sup> * e<sup><i>i</i>&omega;</sup> || = 1
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">abs(exp(i<span style="color: #006FE0;">*</span>0.345)<span style="color: #006FE0;">*</span>exp(i<span style="color: #006FE0;">*</span>1.789))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">1
+</pre>
+</div>
+<p>
+Now notice that if <i>&omega;=2&pi;-&theta;</i> that:
+</p>
+<ul class="org-ul">
+<li>e<sup> <i>i</i> (&theta;+&omega;)</sup> = e<sup> <i>i</i> 2&pi;</sup> = cos(2&pi;) + <i>i</i> sin(2&pi;) = 1 + <i>i</i> 0 = 1
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">1-2.449293598294706e-16i
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">The roots of unity</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+Furthermore if <i>&alpha;=2&pi;/n</i> then:
+</p>
+<ul class="org-ul">
+<li>[e<sup>i&alpha;</sup>]<sup>n</sup> = e<sup>in&alpha;</sup> = e<sup>i2&pi;</sup> = 1
+</li>
+</ul>
+<p>
+This tells us that taking the n<sup>th</sup> root of <i>1</i> has a complex numbers solution! (in addition to the trivial solution of <i>1</i>)
+</p>
+<ul class="org-ul">
+<li>1<sup>1/n</sup> = e<sup>i2&pi;/n</sup>
+</li>
+</ul>
+<p>
+The typical notation here is to say 
+</p>
+<ul class="org-ul">
+<li>&xi; = e<sup>-i2&pi;/n</sup> = cos(2&pi;/n)+isin(2&pi;/n)
+</li>
+<li>&xi;<sup>n</sup>=1
+</li>
+</ul>
+<p>
+This &xi; is called the <b>n<sup>th</sup> root of unity</b>
+By extension we can also see that:
+</p>
+<ul class="org-ul">
+<li>&xi;<sup>n+j</sup> = &xi;<sup>n</sup>&xi;<sup>j</sup> = &xi;<sup>j</sup>
+</li>
+<li>&xi;<sup>nk</sup> = [&xi;<sup>n</sup>]<sup>k</sup> = [e<sup>-i2&pi;</sup>]<sup>k</sup> = 1<sup>k</sup> = 1
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">n<span style="color: #006FE0;">=</span>7
+exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">0.6234898018587336+0.7818314824680298i
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">n <span style="color: #006FE0;">=</span> 7
+seventh_root_of_unity <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">/</span>n)
+seventh_root_of_unity<span style="color: #006FE0;">^</span>n
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">1-4.996003610813204e-16i
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7">Fourier series</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The Fourier series is a very special sum of the exponents of an n<sup>th</sup> root of unity <b>&xi;</b>
+</p>
+<ul class="org-ul">
+<li>1 + &xi;<sup>k</sup> + &xi;<sup>2k</sup> + &#x2026; + &xi;<sup>(n-2)k</sup> + &xi;<sup>(n-1)k</sup>
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">k<span style="color: #006FE0;">=</span>3<span style="color: #006FE0;">,</span> n<span style="color: #006FE0;">=</span> 5
+nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+fourierSeries <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k)
+
+ans<span style="color: #006FE0;">=</span>disp((fourierSeries)<span style="color: #006FE0;">.'</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1.00000 + 0.00000i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| -0.80902 - 0.58779i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0.30902 + 0.95106i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0.30902 - 0.95106i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| -0.80902 + 0.58779i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">|                     |</span>
+</pre>
+</div>
+
+<p>
+Here the <i>k</i> can be any integer value, but the sum will always maintain the property that if it's multiplied by <i>&xi;<sup>k</sup></i> we get the same sequence back. The last term goes to <i>&xi;<sup>nk</sup> = 1</i> and the remaining terms in effect shift places giving us:
+</p>
+<ul class="org-ul">
+<li>&xi;<sup>k</sup> + &xi;<sup>2k</sup> + &xi;<sup>3k</sup> + &#x2026; + &xi;<sup>(n-1)k</sup> + 1
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">k<span style="color: #006FE0;">=</span>3<span style="color: #006FE0;">,</span> n<span style="color: #006FE0;">=</span> 5
+nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+fourierSeries <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k)
+
+ans<span style="color: #006FE0;">=</span>disp((fourierSeries<span style="color: #006FE0;">.*</span>(nthRoot<span style="color: #006FE0;">^</span>k))<span style="color: #006FE0;">.'</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| -0.80902 - 0.58779i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0.30902 + 0.95106i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0.30902 - 0.95106i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| -0.80902 + 0.58779i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1.00000 - 0.00000i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">|                     |</span>
+</pre>
+</div>
+
+<p>
+So we can write
+</p>
+<ul class="org-ul">
+<li>&xi;<sup>k</sup> * <i>fourier-series</i> = <i>fourier-series</i>
+</li>
+</ul>
+<p>
+Therefore
+</p>
+<ul class="org-ul">
+<li>&xi;<sup>k</sup> * <i>fourier-series</i> - <i>fourier-series</i> = 0
+</li>
+<li><i>fourier-series</i> * (&xi;<sup>k</sup> - 1) = 0
+</li>
+</ul>
+<p>
+And therefore.. 
+</p>
+<ul class="org-ul">
+<li><i>fourier-series</i>  = 0
+</li>
+</ul>
+<p>
+.. or to write it out again in full form - for all integer values of <i>k</i>
+</p>
+<ul class="org-ul">
+<li>1+&xi;<sup>k</sup>+&xi;<sup>2k</sup>+&#x2026;+&xi;<sup>(n-2)k</sup>+&xi;<sup>(n-1)k</sup> = 0
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">n<span style="color: #006FE0;">=</span>7
+nthroot<span style="color: #006FE0;">=</span>exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+sum(nthroot<span style="color: #006FE0;">.^</span>(0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">-3.33066907387547e-16
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8">Fourier Vectors</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+It turns out that Fourier series, when places in a vector with different values of <i>k</i>, form mutually orthogonal vectors - here I choose <i>r</i> and <i>s</i> for <i>k</i> and carry out the Hermitian inner product:
+</p>
+<ul class="org-ul">
+<li>[ 1 &xi;<sup>r</sup> &xi;<sup>2r</sup> &#x2026; &xi;<sup>(n-1)r</sup> ] [ 1 &xi;<sup>s</sup> &xi;<sup>2s</sup> &#x2026; &xi;<sup>(n-1)s</sup> ]<sup>*</sup>
+</li>
+<li>[ 1 &xi;<sup>r</sup> &xi;<sup>2r</sup> &#x2026; &xi;<sup>(n-1)r</sup> ] [ 1 &xi;<sup>-s</sup> &xi;<sup>-2s</sup> &#x2026; &xi;<sup>-(n-1)s</sup> ]<sup>T</sup>
+</li>
+<li>1*1 + &xi;<sup>r</sup>*&xi;<sup>-s</sup> + &xi;<sup>2r</sup>*&xi;<sup>-2s</sup> + &#x2026; + &xi;<sup>(n-2)r</sup>&xi;<sup>-(n-2)s</sup>} + &xi;<sup>(n-1)r</sup>&xi;<sup>-(n-1)s</sup>
+</li>
+<li>1 + &xi;<sup>r-s</sup> + &xi;<sup>2(r-s)</sup> + &#x2026; + &xi;<sup>(n-2)(r-s)</sup> + &xi;<sup>(n-1)(r-s)</sup>
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">r<span style="color: #006FE0;">=</span>7<span style="color: #006FE0;">,</span> s<span style="color: #006FE0;">=</span>13<span style="color: #006FE0;">,</span> n<span style="color: #006FE0;">=</span> 11
+nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+fourierVectorR <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>r)
+fourierVectorS <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>s)
+fourierVectorR<span style="color: #006FE0;">*</span>fourierVectorS<span style="color: #006FE0;">'</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">-2.331468351712829e-15
+</pre>
+</div>
+
+<p>
+Now <i>r-s</i> is just another <i>k</i> value from our Fourier series and so the sum will go to <i>0</i> <b>except</b> when <i>r=s</i>:
+</p>
+<ul class="org-ul">
+<li>[ 1 &xi;<sup>k</sup> &xi;<sup>2k</sup> &#x2026; &xi;<sup>(n-1)k</sup> ]  [ 1 &xi;<sup>k</sup> &xi;<sup>2k</sup> &#x2026; &xi;<sup>(n-1)k</sup> ]<sup>*</sup>
+</li>
+<li>1*1 + &xi;<sup>k</sup>&xi;<sup>-k</sup> + &xi;<sup>2k</sup>&xi;<sup>-2k</sup> + &#x2026; + &xi;<sup>(n-1)k</sup> &xi;<sup>-(n-1)k</sup>
+</li>
+<li>1*1 + &xi;<sup>0</sup> + &xi;<sup>0</sup> + &#x2026; + &xi;<sup>0</sup>
+</li>
+<li>1 + 1 + 1 + &#x2026; + 1 = n
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">r<span style="color: #006FE0;">=</span>7<span style="color: #006FE0;">,</span> s<span style="color: #006FE0;">=</span>7<span style="color: #006FE0;">,</span> n<span style="color: #006FE0;">=</span> 11
+nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+fourierVectorR <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>r)
+fourierVectorS <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>s)
+fourierVectorR<span style="color: #006FE0;">*</span>fourierVectorS<span style="color: #006FE0;">'</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org">11.00000000000002
+</pre>
+</div>
+
+<p>
+You could also just view the <i>r=s</i> case as the sum of the 2-norms of the roots of unity. There are <i>n</i> terms and each one is necessarily of length <i>1</i>. Either way, the answer will always be <i>n</i> no matter what <i>k</i> you choose
+and therefore the 2-norm/length all all fourier vectors is <i>n<sup>1/2</sup></i>
+</p>
+
+<p>
+It's important to note that if you drop all the complex terms none of this works! You can't construct mutually orthogonal vectors out of purely real sine/cosine waves
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9">Fourier Matrix</h2>
+<div class="outline-text-2" id="text-9">
+<p>
+We've just shown that the fourier vectors are orthogonal as long as the <i>k</i>'s are different. The only caveat is that when <i>k=n</i> then the result is identical to <i>k=0</i> and when <i>k=n+1</i> it's identical to <i>k=1</i> .. etc. So there are actually only <i>n</i> distinct fourier vectors. The next step is self evident. We just choose take the <i>n</i> distinct vectors and slap them together into a fourier matrix <b>F</b> and end up withh an orthogonal basis:<br >
+<b>F</b> =
+</p>
+<table>
+
+
+<colgroup>
+<col  class="right">
+
+<col  class="left">
+
+<col  class="left">
+
+<col  class="left">
+
+<col  class="left">
+</colgroup>
+<tbody>
+<tr>
+<td class="right">1</td>
+<td class="left">1</td>
+<td class="left">1</td>
+<td class="left">1</td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">&xi;</td>
+<td class="left">&xi;<sup>2</sup></td>
+<td class="left">&xi;<sup>3</sup></td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">&xi;<sup>2</sup></td>
+<td class="left">&xi;<sup>4</sup></td>
+<td class="left">&xi;<sup>6</sup></td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">&xi;<sup>3</sup></td>
+<td class="left">&xi;<sup>6</sup></td>
+<td class="left">&xi;<sup>9</sup></td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">&#x2026;</td>
+<td class="left">&#x2026;</td>
+<td class="left">&#x2026;</td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">&xi;<sup>n-1</sup></td>
+<td class="left">&xi;<sup>n-2</sup></td>
+<td class="left">&#x2026;</td>
+<td class="left">..</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">n<span style="color: #006FE0;">=</span> 7
+nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+F<span style="color: #006FE0;">=</span>zeros(n<span style="color: #006FE0;">,</span>0)
+<span style="color: #0000FF;">for</span> k <span style="color: #006FE0;">=</span> 0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)
+  F<span style="color: #006FE0;">=</span>horzcat(F<span style="color: #006FE0;">,</span>(nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k))<span style="color: #006FE0;">.'</span>)
+<span style="color: #0000FF;">end</span>
+ans <span style="color: #006FE0;">=</span> round(F<span style="color: #006FE0;">.*</span>1000)<span style="color: #006FE0;">./</span>1000
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1+0i | 1+0i          | 1+0i          | 1+0i          | 1+0i          | 1+0i          | 1+0i          |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1+0i | 0.623+0.782i  | -0.223+0.975i | -0.901+0.434i | -0.901-0.434i | -0.223-0.975i | 0.623-0.782i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1+0i | -0.223+0.975i | -0.901-0.434i | 0.623-0.782i  | 0.623+0.782i  | -0.901+0.434i | -0.223-0.975i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1+0i | -0.901+0.434i | 0.623-0.782i  | -0.223+0.975i | -0.223-0.975i | 0.623+0.782i  | -0.901-0.434i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1+0i | -0.901-0.434i | 0.623+0.782i  | -0.223-0.975i | -0.223+0.975i | 0.623-0.782i  | -0.901+0.434i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1+0i | -0.223-0.975i | -0.901+0.434i | 0.623+0.782i  | 0.623-0.782i  | -0.901-0.434i | -0.223+0.975i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1+0i | 0.623-0.782i  | -0.223-0.975i | -0.901-0.434i | -0.901+0.434i | -0.223+0.975i | 0.623+0.782i  |</span>
+</pre>
+</div>
+
+<p>
+Looking at the real components of the columns - there is one constant component (the first column) and then <i>n</i> samples of the <i>cosine</i> function over one oscillation for the second column, <i>n</i> samples over 2 periods for the 3rd column, <i>n</i> samples over 3 periods.. etc. <br >
+&real;(<b>F</b>) =
+</p>
+<table>
+
+
+<colgroup>
+<col  class="right">
+
+<col  class="left">
+
+<col  class="left">
+
+<col  class="left">
+
+<col  class="left">
+</colgroup>
+<tbody>
+<tr>
+<td class="right">1</td>
+<td class="left">1</td>
+<td class="left">1</td>
+<td class="left">1</td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">cos(1*2&pi;/n)</td>
+<td class="left">cos(2*2&pi;/n)</td>
+<td class="left">cos(3*2&pi;/n\)</td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">cos(2*2&pi;/n)</td>
+<td class="left">cos(4*2&pi;/n)</td>
+<td class="left">cos(6*2&pi;/n)</td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">cos(3*2&pi;/n)</td>
+<td class="left">cos(6*2&pi;/n)</td>
+<td class="left">cos(9*2&pi;/n)</td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">&#x2026;</td>
+<td class="left">&#x2026;</td>
+<td class="left">&#x2026;</td>
+<td class="left">..</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">cos([n-1]*2&pi;/n)</td>
+<td class="left">cos(2[n-1]2&pi;/n)</td>
+<td class="left">cos(3[n-1]*2&pi;/n)</td>
+<td class="left">..</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+If your input is over 1 second then this maps to a sampled cosine function of 1Hz, 2Hz, 3Hz, etc..<br >
+</p>
+<div class="org-src-container">
+
+<pre class="src src-octave">n<span style="color: #006FE0;">=</span> 7
+nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+F<span style="color: #006FE0;">=</span>zeros(n<span style="color: #006FE0;">,</span>0)
+<span style="color: #0000FF;">for</span> k <span style="color: #006FE0;">=</span> 0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)
+  F<span style="color: #006FE0;">=</span>horzcat(F<span style="color: #006FE0;">,</span>(nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k))<span style="color: #006FE0;">.'</span>)
+<span style="color: #0000FF;">end</span>
+ans <span style="color: #006FE0;">=</span> real(round(F<span style="color: #006FE0;">.*</span>1000)<span style="color: #006FE0;">./</span>1000)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 |      1 |      1 |      1 |      1 |      1 |      1 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1 |  0.623 | -0.223 | -0.901 | -0.901 | -0.223 |  0.623 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1 | -0.223 | -0.901 |  0.623 |  0.623 | -0.901 | -0.223 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1 | -0.901 |  0.623 | -0.223 | -0.223 |  0.623 | -0.901 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1 | -0.901 |  0.623 | -0.223 | -0.223 |  0.623 | -0.901 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1 | -0.223 | -0.901 |  0.623 |  0.623 | -0.901 | -0.223 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1 |  0.623 | -0.223 | -0.901 | -0.901 | -0.223 |  0.623 |</span>
+</pre>
+</div>
+<p>
+However you will notice that there is a symmetry around the middle axis and higher frequencies look identical to lower frequencies (and hence the real values don't form an orthogonal basis)
+</p>
+<ul class="org-ul">
+<li><b>&xi;<sup>n-k</sup></b> = cos((n-k)(2&pi;/n)+isin((n-k)(2&pi;/n)=cos(2&pi;+2&pi;k/n)+isin(2&pi;+2&pi;k/n)
+</li>
+</ul>
+<p>
+b/c <i>sin(2&pi;+x)=sin(x)</i> we simplify
+</p>
+<ul class="org-ul">
+<li>= cos(2&pi;k/n)+isin(2&pi;k/n) = <b>&xi;<sup>k</sup></b>
+</li>
+</ul>
+<p>
+The complex numbers are similarly not orthogonal, just the <i>n-k<sup>th</sup></i> column is the negative of the <i>k<sup>th</sup></i> column
+</p>
+
+<p>
+Since each series (irrespective of the <i>k</i> exponent) has length <i>n<sup>1/2</sup></i> (remember that the self-inner norms equal <i>n</i>), all the columns of <b>F</b> can be normalized in one go by dividing the matrix by <i>n<sup>1/2</sup></i>. The resulting matrix <b>(1/n<sup>1/2</sup>)F</b> is now even better b/c it's orthonormal/unitary. Therefore its inverse is just its Hermitian transpose.
+</p>
+
+<ul class="org-ul">
+<li>[(1/n<sup>1/2</sup>)F]<sup>-1</sup> = [(1/n<sup>1/2</sup>)F]<sup>*</sup>
+</li>
+<li>F<sup>-1</sup> = (1/n)F<sup>*</sup>
+</li>
+</ul>
+<p>
+In <b>F<sup>-1</sup>F</b> the diagonal elements will be the column magnitudes, which have been normalized to <i>1</i>, and the off diagonal elements will be inner products of orthogonal vectors and therefore <i>0</i> - so the product will give us the identity matrix <b>I</b>
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">n<span style="color: #006FE0;">=</span> 7
+nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+F<span style="color: #006FE0;">=</span>zeros(n<span style="color: #006FE0;">,</span>0)
+<span style="color: #0000FF;">for</span> k <span style="color: #006FE0;">=</span> 0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)
+  F<span style="color: #006FE0;">=</span>horzcat(F<span style="color: #006FE0;">,</span>(nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k))<span style="color: #006FE0;">.'</span>)
+<span style="color: #0000FF;">end</span>
+
+F <span style="color: #006FE0;">=</span> F<span style="color: #006FE0;">./</span>sqrt(n) <span style="color: #8D8D84; font-style: italic;">%Normalize the Fourier matrix</span>
+ans <span style="color: #006FE0;">=</span> real(round(F<span style="color: #006FE0;">*</span>F<span style="color: #006FE0;">'.*</span>1000)<span style="color: #006FE0;">./</span>1000)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0 | 0 | 0 | 0 | 0 | 0 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0 | 1 | 0 | 0 | 0 | 0 | 0 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0 | 0 | 1 | 0 | 0 | 0 | 0 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0 | 0 | 0 | 1 | 0 | 0 | 0 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0 | 0 | 0 | 0 | 1 | 0 | 0 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0 | 0 | 0 | 0 | 0 | 1 | 0 |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0 | 0 | 0 | 0 | 0 | 0 | 1 |</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10">Frequency Space?</h2>
+<div class="outline-text-2" id="text-10">
+<p>
+We constructed a very convenient basis that's easily invertible and independent of the input and we can now easily move to the basis and back but it's not exactly what one would imagine as "frequency space" and a few things are unresolved
+</p>
+</div>
+
+<div id="outline-container-sec-10-1" class="outline-3">
+<h3 id="sec-10-1">How does a sinusoidal look in this basis?</h3>
+<div class="outline-text-3" id="text-10-1">
+<p>
+Since each column is a mixture of real and imaginary samples of sine/cosine functions we at first glance don't have a straight correspondance between frequencies and the column number.<br >
+Reusing the trigonometric identities: 
+</p>
+<ul class="org-ul">
+<li>sin(-&theta;) = -sin(&theta;)
+</li>
+<li>cos(-&theta;) = cos(&theta;)
+</li>
+</ul>
+<p>
+We can carefully pair Euler functions to get back bare sine/cosine functions with no imaginary parts
+</p>
+<ul class="org-ul">
+<li>[e<sup>i&theta;</sup> + e<sup>-i&theta;</sup>]/2 = [cos(&theta;) + isin(&theta;) + cos(-&theta;) + isin(-&theta;)]/2 = <b>cos(&theta;)</b>
+</li>
+<li>[e<sup>i&theta;</sup> - e<sup>-i&theta;</sup>]/2i = [cos(&theta;) + isin(&theta;) - cos(-&theta;) - isin(-&theta;)]/2i = <b>sin(&theta;)</b>
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">samples<span style="color: #006FE0;">=</span>[0<span style="color: #006FE0;">:</span>0.3<span style="color: #006FE0;">:</span>(2<span style="color: #006FE0;">*</span>pi)]
+round(cos(samples)<span style="color: #006FE0;">.*</span>100)<span style="color: #006FE0;">./</span>100
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">samples<span style="color: #006FE0;">=</span>[0<span style="color: #006FE0;">:</span>0.3<span style="color: #006FE0;">:</span>(2<span style="color: #006FE0;">*</span>pi)]
+round((exp(i<span style="color: #006FE0;">*</span>samples)<span style="color: #006FE0;">+</span>exp(<span style="color: #006FE0;">-</span>i<span style="color: #006FE0;">*</span>samples))<span style="color: #006FE0;">./</span>2<span style="color: #006FE0;">.*</span>100)<span style="color: #006FE0;">./</span>100
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |</span>
+</pre>
+</div>
+<p>
+If we put in <i>-2&pi;&phi;/n</i> for <i>&theta;</i>  we back our familiar roots of unity:
+</p>
+<ul class="org-ul">
+<li>[&xi;<sup>-&phi;</sup> + &xi;<sup>&phi;</sup>]/2 = cos(2&pi;&phi;/n)
+</li>
+<li>n*[&xi;<sup>-&phi;</sup> + &xi;<sup>&phi;</sup>]/2 = cos(2&pi;&phi;)
+</li>
+<li>[&xi;<sup>-&phi;</sup> - &xi;<sup>&phi;</sup>]/2i = sin(2&pi;&phi;/n)
+</li>
+<li>n*[&xi;<sup>-&phi;</sup> - &xi;<sup>&phi;</sup>]/2i = sin(2&pi;&phi;)
+</li>
+</ul>
+<blockquote>
+<p>
+<b>Note</b>: b/c these are cyclical functions:
+</p>
+<ul class="org-ul">
+<li>sin(-&theta;) = sin(2&pi; - &theta;)
+</li>
+<li>cos(-&theta;) = cos(2&pi; - &theta;)
+</li>
+<li>e<sup>-i&theta;</sup> = e<sup>i(2&pi;-&theta;)</sup>
+</li>
+<li>&xi;<sup>-k</sup> = &xi;<sup>n-k</sup>
+</li>
+</ul>
+</blockquote>
+<p>
+With some rearranging we can rewrite these as:
+</p>
+<ul class="org-ul">
+<li>cos(2&pi;&phi;) = n*[&xi;<sup>n-&phi;</sup> + &xi;<sup>&phi;</sup>]/2
+</li>
+<li>sin(2&pi;&phi;) = n*[&xi;<sup>n-&phi;</sup> - &xi;<sup>&phi;</sup>]/2i
+</li>
+</ul>
+<p>
+and if <i>&phi;</i> is equal to a <i>k</i> value, then this will be equal to basis vectors in our fourier matrix.
+</p>
+
+<p>
+For instance if <i>&phi;</i> = 3 we can pick an <i>x</i>
+</p>
+<ul class="org-ul">
+<li>x = [ 0 0 n/2 0 0 .. 0 0 n/2 0 0]<sub>1,n</sub>
+</li>
+</ul>
+<p>
+So that:
+</p>
+<ul class="org-ul">
+<li>cos(2&pi; * 3) = F<sup>*</sup>x<sup>T</sup>
+</li>
+</ul>
+
+<p>
+Similarly with the sine function, except with an extra minus sign:
+</p>
+<ul class="org-ul">
+<li>y = [ 0 0 -n/2i 0 0 .. 0 0 n/2i 0 0]<sub>1,n</sub>
+</li>
+</ul>
+<p>
+So that:
+</p>
+<ul class="org-ul">
+<li>sin(2&pi; * 3) = F<sup>*</sup>y<sup>T</sup>
+</li>
+</ul>
+
+<p>
+Both of these matrix-vector products are always producing real values and complex coordinate value has a real and imaginary part, so it stands for both a have a sine and a cosine of it's corresponding basis vector frequency.
+</p>
+
+<p>
+Furthermore there is a consistent symmetry between the n<sup>th</sup> and (n-&phi;)<sup>th</sup> coordinate. This symmetry in both real and imaginary terms the first n/2 terms tell us everything about the oscillating components of our input. You can completely disregard the second n/2 terms.
+</p>
+<blockquote>
+<p>
+<b>Note</b> This doesn't represent a loss of information. The input had <b>n</b> real values the output has <b>n/2</b> complex coordinates (each made of 2 values).<br >
+<b>Note</b> If the input is complex then this symmertry won't hold. But in most applications a complex input is not meaningful
+</p>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-sec-10-2" class="outline-3">
+<h3 id="sec-10-2">How does a phase shift look in this basis?</h3>
+<div class="outline-text-3" id="text-10-2">
+<p>
+Notice how each the real part of the coordinate is making <i>cosine</i> waves and the <i>imaginary</i> is making sine waves. Both are present in the final complex coordinate value and an arbitrary coordinate value will generate one of both.
+</p>
+<ul class="org-ul">
+<li>v = &real;(v) + &image;(v)
+</li>
+<li>vF<sup>*</sup> = &real;(v)F<sup>*</sup> + &image;(v)F<sup>*</sup> = &alpha; sin(&#x2026;) + &beta; cos(&#x2026;)
+</li>
+</ul>
+<p>
+Sinusoidals have an amazing property, that if you add sinusoidals that have the same frequency but different amplitudes and/or phase you always get back just one sinusoidal of that frequency. 
+</p>
+
+<p>
+In our case we are simply adding a <i>sine</i> and <i>cosine</i> and this additive property as the consequency of the trig identity:
+</p>
+<ul class="org-ul">
+<li>sin(A+B) = sin(A)cos(B)+cos(A)sin(B)
+</li>
+</ul>
+<p>
+Now given any <i>sine</i> wave with a phase shift we can decompose it into the sum of a <i>sine</i> and <i>cosine</i>
+</p>
+<ul class="org-ul">
+<li>Asin(&omega; t + &phi;)
+</li>
+<li>= Asin(&phi;)cos(&omega;t)+Acos(&phi;)sin(&omega; t)
+</li>
+<li>= A<sub>1</sub>cos(&omega; t) + A<sub>2</sub>sin(&omega; t)  <i>.. bc &phi; is a constant</i>
+</li>
+</ul>
+<p>
+Working back we get the general rules for <b>harmonic addition</b>
+</p>
+<ul class="org-ul">
+<li>&alpha; sin(&omega;t) + &beta; cos(&omega;t) = &gamma; sin(&omega;t+&theta;)
+</li>
+<li>&gamma; = &radic;[&alpha;<sup>2</sup>+&beta;<sup>2</sup>]
+</li>
+<li>&theta; = atan(&beta;/&alpha;)
+</li>
+</ul>
+<p>
+So these sine/cosine functions of the same frequency in conjuction represent a phase shifted sine function.
+</p>
+
+<p>
+It also means that if your phase shifts (say your input is delayed) then the real and imaginary coordiante components will fluctuate, but the norm/length will remain constant b/c  &radic;[&alpha;<sup>2</sup>+&beta;<sup>2</sup>] will always be equal to the sine wave's amplitude &gamma;.
+</p>
+
+<p>
+For our generic input signal <b>x</b> if we take the norm of <b>Fx</b> (or more simply just do <b>Fx(Fx)^{</b>}*) you will get the amplitude at each frequency component (at the expense of loosing all phase information) and you can then draw a spectrogram
+</p>
+
+<p>
+This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2&pi;&phi;) will fluctuate with <i>&phi;</i> it's matching Euler basis vector <i>A&xi;<sup>n-&phi;</sup></i> will have constant magnitude <i>A</i> for all <i>&phi;</i> (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-10-3" class="outline-3">
+<h3 id="sec-10-3">How does a frequency who's period isn't a whole fraction of the sample rate come out in this basis?</h3>
+<div class="outline-text-3" id="text-10-3">
+<p>
+All the previous math had assumed for simplicity that the input was at a frequency that matches one of the basis vectors - that it in effect produced one coordinate point. But how about if <i>&phi;</i> is not equal to a <i>k</i> value?
+</p>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

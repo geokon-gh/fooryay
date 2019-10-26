@@ -1,0 +1,561 @@
+#+TITLE: Discrete Fourier Transform
+#+DESCRIPTION: DFT in MATLAB/Octave
+#+INCLUDE: "../web/config.org"
+
+* Goal
+Using the multiplicative properties of complex numbers we construct an easily-invertible orthogonal basis in which periodic components of our input become apparant. This basis allows us to carry out a class of operations that are numerically intensive in the standard basis but much quicker in the frequency-basis.
+#+BEGIN_SRC octave
+inline code examples are in MATLAB/Octave
+#+END_SRC
+
+* Complex numbers
+Complex numbers are of the form *a+ib* where *i= \radic(-1)* and *a* and *b* are known as the real and imaginary components of the complex number. The pair (a,b) are often referred to as a point on the complex plane. However the implicit analogy to 2D coordinates is a bit probematic
+
+To envision a complex plane we treat the /real/ component *a* acting as the /x/ and the /imaginary/ component *b* acting as the /y/.
+Like 2D coordinates, we can add/translate them and they can be scaled
+ - (a+ib) + (c+id) = (a+c) + i(bd)
+#+BEGIN_SRC octave :results org :export both 
+1+5i + 3+2j
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+4+7i
+#+END_SRC
+
+ - c * (a+ib) = ca +icb 
+#+BEGIN_SRC octave
+10 * (1+5i)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+10+50i
+#+END_SRC
+
+However unlike 2D [x,y] coordinates, complex numbers can be multiplied:
+ - (a+ib) * (c+id) = (ac-bd) + i(ad+bc)
+#+BEGIN_SRC octave
+(1+2i) * (3+4j)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+-5+10i
+#+END_SRC
+
+Normally if we are given 2 coordinates [x_{0},y_{0}] and [x_{1},y_{1}] we never ask ourselves to multiple them because multiplication between two points is simply no a defined operation. However in the complex-number case this operation comes naturally and it generates a new complex number
+
+#+BEGIN_QUOTE
+Note: You can do a dot and cross product between two [x,y] coordinates but:
+ - [x_{0},y_{0}] \bullet [x_{1},y_{1}] \to /scalar/
+ - [x_{0},y_{0}] \times [x_{1},y_{1}] \to /requires an extra =z= dimension/
+#+END_QUOTE
+ 
+So points in the complex plane have this extra "feature" so it's important to not stretch the 2D coordinate interpretation too far. As far as I can tell there is no easy way to visualize what the result of a multiplication looks like in the general case.
+
+* Complex Conjugates
+Just like points and vectors, complex numbers have a "length" or magnitude
+ - ||a+ib|| = \radic(a^{2}+b^{2}}
+#+BEGIN_SRC octave
+abs(3+4i)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+5
+#+END_SRC
+
+And just like for points and vectors, this norm is a real scalar value
+
+The square of the norm is ofcourse just /a^{2}+b^{2}/ and this often comes up in things like the inner product.  For instance given a vector [x y] we can take its inner product with itself [x y][x y]^{T} to get its norm-squared. In the trivial =1x1= case this will be [z][z]^{T} which is z^{2}.
+
+In the complex case where /z/ is a complex number /a+ib/ then we'd get /z*z^{T}=z^{2}=(a+ib)^{2}=a^{2}+i2ab-b^{2}/ which is non-real and doesn't match our magnitude-squared. So using the transpose no longer works. But this norm-squared is still easy to express as a product
+ - a^{2}+b^{2} = (a+ib)(a-ib)
+With /a-ib/ known as the /complex conjugate/ of /a+ib/
+#+BEGIN_SRC octave
+conj(3+4j)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+3-4i
+#+END_SRC
+
+#+BEGIN_SRC octave
+v = 3+4i
+v*conj(v)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+25
+#+END_SRC
+
+And what's convenient is that this actually still works for real values. Since a real value /a/ can be written as the complex number a+i*0 we can write its complex conjugate as a-i*0 and see that it's norm is
+ - a^2+0^2 = (a+i0)(a-i0) = a^2
+Which is just the absolute value of /a/ squared
+#+BEGIN_SRC octave
+v = 3
+v*conj(v)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+9
+#+END_SRC
+
+So instead of doing a transpose we need to introduce a new transposition called the Hermitian transpose
+ - [a+ib c+id]^{*} = [a-ib c-d]^{T}
+The Hermitian transpose is denoted with a star. It simply take a normal transpose and replaces the terms with their complex conjugates.
+#+BEGIN_SRC octave
+v = [3+4i 6+8i]
+v'
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 3-4i |
+| 6-8i |
+#+END_SRC
+
+#+BEGIN_SRC octave
+v = [3+4i 6+8i]
+v*v'
+#+END_SRC
+
+#+RESULTS:
+: 125
+
+ When the vector values are all real it will behave exactly like a transpose and when the values are complex, it will take their conjugates and give us scalar/real values of each complex values' magnitude
+
+* The Unit Circle
+Notice that when the /norm-squared/ is equal to /1/ the magnitude is also equal to /1/. All these special points who's length is equal to /1/ lie on what's called the /unit cirle/. If we start with two complex numbers /a+ib/ and /c+id/ then
+ - (a^2+b^2)^{1/2} = 1 /and therefore/ a^2+b^2 = 1
+ - (c^2+d^2)^{1/2} = 1 /and therefore/ c^2+d^2 = 1
+As we saw, their product is the point /(ac-bd) + i(ad+bc)/ and its length is also equal to 1. Proof:
+ - [ (ac-bd)^{2} + (ad+bc)^{2} ]^(1/2)
+ - [ a^{2}c^{2}-2acbd+b^{2}d^{2}+a^{2}d^{2}+2adbc+b^{2}c^{2} ]^{1/2}
+ - [ a^{2}c^{2}+b^{2}b^{2}+a^{2}d^{d}+b^{2}c^{2} ]^{1/2}
+ - [ c^2(a^2+b^2) + d^2(a^2+b^2) ]^(1/2)
+Through some subsitution we see that the length of the product is also equal to /1/
+
+This tells us that while the general complex product is hard to think about, we know that least the product of any two points on the unit circle gives us a new point on the unit circle
+#+BEGIN_SRC octave
+v = sqrt(0.2)+sqrt(0.8)*i
+w = sqrt(0.69)+sqrt(0.31)*i
+abs(v*w)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+0.9999999999999999
+#+END_SRC
+
+* Euler's Formula
+To make the multiplicative rotations more natural we would like to start describing the points in terms of polar coordinates. The initial conversion is straightforward:
+- radius = r = (a^2+b^2)^{1/2}
+- angle = \theta = atan(b/a)
+Going back is also easy
+- a = r\cos(\theta)
+- b = r\sin(\theta)
+So the complex number /z=a+ib/ can now be defined in terms of /r/ and /theta/ and we can rewrite /a+ib/ as:
+- z = r\cos(\theta) + ir\sin(\theta)
+
+A more compact representation of this is given by *Euler's formula*:
+ - re^{i\theta}=r\cos(\theta)+ir\sin(\theta)
+A complete proof of this identity is a bit long, but the steps are:
+- Show that the derivative of e^x is e^x (it's the only equation of the form a^x that have this "stable" property)
+- Using the chain rule we see that the /n^{th}/ derivative of e^{ix} will be equal to i^{n}e^{ix}
+- i^{n} is a cyclic function with half its terms imaginary and half real
+- We then describe e^{i\theta} around /0/ in terms of the Taylor/Maclaurin Series
+- Half the terms of the Taylor/Maclaurin Series will be imaginary and half real. 
+- The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function
+#+BEGIN_SRC octave
+123*exp(i*0.321)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+116.7172063656597+38.80842354690544i
+#+END_SRC
+
+#+BEGIN_SRC octave
+123*cos(0.321)+i*123*sin(0.321)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+116.7172063656597+38.80842354690544i
+#+END_SRC
+
+Using the trigonometric properties (which are self evident if you think of the graph and even/odd functions)
+ - sin(-\theta)=-sin(\theta)
+ - cos(-\theta)= cos(\theta)
+We can rewrite the complex conjugate as
+ - a - ib
+ - r \cos(\theta) - /i/ r \sin(\theta)
+ - r \cos(-\theta) + /i/ r \sin{-\theta) = *re^{-\theta}*
+#+BEGIN_SRC octave
+123*exp(-i*0.321)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+116.7172063656597-38.80842354690544i
+#+END_SRC
+
+As we just saw in the previous section, the radius in the products of points on the unit cirle is always equal to one. so a polar coordinate system will bring the problem down from 2 variables, /a/ and /b/, to just one constant /radius/ of size /1/ and one variable /angle/ \theta. The points on the unit circle can all be written down as:
+- e^{i\theta}
+And we can say the magnitude of the product of two of these is always equal to /1/
+ -  || e^{/i/\theta} * e^{/i/\omega} || = 1
+#+BEGIN_SRC octave
+abs(exp(i*0.345)*exp(i*1.789))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+1
+#+END_SRC
+Now notice that if /\omega=2\pi-\theta/ that:
+ - e^{ /i/ (\theta+\omega)} = e^{ /i/ 2\pi} = cos(2\pi) + /i/ sin(2\pi) = 1 + /i/ 0 = 1
+#+BEGIN_SRC octave
+exp(i*2*pi)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+1-2.449293598294706e-16i
+#+END_SRC
+
+* The roots of unity
+
+Furthermore if /\alpha=2\pi/n/ then:
+ - [e^{i\alpha}]^{n} = e^{in\alpha} = e^{i2\pi} = 1
+This tells us that taking the n^{th} root of /1/ has a complex numbers solution! (in addition to the trivial solution of /1/)
+ - 1^{1/n} = e^{i2\pi/n}
+The typical notation here is to say 
+ - \xi = e^{-i2\pi/n} = \cos(2\pi/n)+i\sin(2\pi/n)
+ - \xi^{n}=1
+This \xi is called the *n^{th} root of unity*
+By extension we can also see that:
+ - \xi^{n+j} = \xi^{n}\xi^{j} = \xi^{j}
+ - \xi^{nk} = [\xi^{n}]^{k} = [e^{-i2\pi}]^k = 1^k = 1
+
+#+BEGIN_SRC octave
+n=7
+exp(i*2*pi./n)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+0.6234898018587336+0.7818314824680298i
+#+END_SRC
+
+#+BEGIN_SRC octave
+n = 7
+seventh_root_of_unity = exp(i*2*pi/n)
+seventh_root_of_unity^n
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+1-4.996003610813204e-16i
+#+END_SRC
+
+* Fourier series
+
+The Fourier series is a very special sum of the exponents of an n^{th} root of unity *\xi*
+ -  1 + \xi^k + \xi^{2k} + ... + \xi^{(n-2)k} + \xi^{(n-1)k}
+#+BEGIN_SRC octave :results org 
+  k=3, n= 5
+  nthRoot = exp(i*2*pi./n)
+  fourierSeries = nthRoot.^((0:(n-1))*k)
+
+  ans=disp((fourierSeries).')
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1.00000 + 0.00000i  |
+| -0.80902 - 0.58779i |
+| 0.30902 + 0.95106i  |
+| 0.30902 - 0.95106i  |
+| -0.80902 + 0.58779i |
+|                     |
+#+END_SRC
+
+Here the /k/ can be any integer value, but the sum will always maintain the property that if it's multiplied by /\xi^k/ we get the same sequence back. The last term goes to /\xi^{nk} = 1/ and the remaining terms in effect shift places giving us:
+ -  \xi^k + \xi^{2k} + \xi^{3k} + ... + \xi^{(n-1)k} + 1
+#+BEGIN_SRC octave :results org 
+  k=3, n= 5
+  nthRoot = exp(i*2*pi./n)
+  fourierSeries = nthRoot.^((0:(n-1))*k)
+
+  ans=disp((fourierSeries.*(nthRoot^k)).')
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| -0.80902 - 0.58779i |
+| 0.30902 + 0.95106i  |
+| 0.30902 - 0.95106i  |
+| -0.80902 + 0.58779i |
+| 1.00000 - 0.00000i  |
+|                     |
+#+END_SRC
+
+So we can write
+ - \xi^k * /fourier-series/ = /fourier-series/
+Therefore
+ - \xi^k * /fourier-series/ - /fourier-series/ = 0
+ - /fourier-series/ * (\xi^k - 1) = 0
+And therefore.. 
+ - /fourier-series/  = 0
+.. or to write it out again in full form - for all integer values of /k/
+ -  1+\xi^k+\xi^{2k}+...+\xi^{(n-2)k}+\xi^{(n-1)k} = 0
+#+BEGIN_SRC octave
+n=7
+nthroot=exp(i*2*pi./n)
+sum(nthroot.^(0:(n-1)))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+-3.33066907387547e-16
+#+END_SRC
+
+* Fourier Vectors
+
+It turns out that Fourier series, when places in a vector with different values of /k/, form mutually orthogonal vectors - here I choose /r/ and /s/ for /k/ and carry out the Hermitian inner product:
+ - [ 1 \xi^r \xi^{2r} ... \xi^{(n-1)r} ] [ 1 \xi^s \xi^{2s} ... \xi^{(n-1)s} ]^{*}
+ - [ 1 \xi^r \xi^{2r} ... \xi^{(n-1)r} ] [ 1 \xi^{-s} \xi^{-2s} ... \xi^{-(n-1)s} ]^{T}
+ - 1*1 + \xi^r*\xi^-s + \xi^{2r}*\xi^{-2s} + ... + \xi^{(n-2)r}\xi^{-(n-2)s}} + \xi^{(n-1)r}\xi^{-(n-1)s}
+ - 1 + \xi^{r-s} + \xi^{2(r-s)} + ... + \xi^{(n-2)(r-s)} + \xi^{(n-1)(r-s)}
+#+BEGIN_SRC octave
+  r=7, s=13, n= 11
+  nthRoot = exp(i*2*pi./n)
+  fourierVectorR = nthRoot.^((0:(n-1))*r)
+  fourierVectorS = nthRoot.^((0:(n-1))*s)
+  fourierVectorR*fourierVectorS'
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+-2.331468351712829e-15
+#+END_SRC
+
+Now /r-s/ is just another /k/ value from our Fourier series and so the sum will go to /0/ *except* when /r=s/:
+ - [ 1 \xi^k \xi^{2k} ... \xi^{(n-1)k} ]  [ 1 \xi^k \xi^{2k} ... \xi^{(n-1)k} ]^{*}
+ - 1*1 + \xi^{k}\xi^{-k} + \xi^{2k}\xi^{-2k} + ... + \xi^{(n-1)k} \xi^{-(n-1)k}
+ - 1*1 + \xi^{0} + \xi^{0} + ... + \xi^{0}
+ - 1 + 1 + 1 + ... + 1 = n
+#+BEGIN_SRC octave
+  r=7, s=7, n= 11
+  nthRoot = exp(i*2*pi./n)
+  fourierVectorR = nthRoot.^((0:(n-1))*r)
+  fourierVectorS = nthRoot.^((0:(n-1))*s)
+  fourierVectorR*fourierVectorS'
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+11.00000000000002
+#+END_SRC
+
+You could also just view the /r=s/ case as the sum of the 2-norms of the roots of unity. There are /n/ terms and each one is necessarily of length /1/. Either way, the answer will always be /n/ no matter what /k/ you choose
+and therefore the 2-norm/length all all fourier vectors is /n^{1/2}/
+
+It's important to note that if you drop all the complex terms none of this works! You can't construct mutually orthogonal vectors out of purely real sine/cosine waves
+
+* Fourier Matrix
+
+We've just shown that the fourier vectors are orthogonal as long as the /k/'s are different. The only caveat is that when /k=n/ then the result is identical to /k=0/ and when /k=n+1/ it's identical to /k=1/ .. etc. So there are actually only /n/ distinct fourier vectors. The next step is self evident. We just choose take the /n/ distinct vectors and slap them together into a fourier matrix *F* and end up withh an orthogonal basis:\\
+*F* =
+| 1 | 1         | 1         | 1     | .. |
+| 1 | \xi       | \xi^2     | \xi^3 | .. |
+| 1 | \xi^2     | \xi^4     | \xi^6 | .. |
+| 1 | \xi^3     | \xi^6     | \xi^9 | .. |
+| 1 | ...       | ...       | ...   | .. |
+| 1 | \xi^{n-1} | \xi^{n-2} | ...   | .. |
+
+#+BEGIN_SRC octave
+  n= 7
+  nthRoot = exp(i*2*pi./n)
+  F=zeros(n,0)
+  for k = 0:(n-1)
+    F=horzcat(F,(nthRoot.^((0:(n-1))*k)).')
+  end
+  ans = round(F.*1000)./1000
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1+0i | 1+0i          | 1+0i          | 1+0i          | 1+0i          | 1+0i          | 1+0i          |
+| 1+0i | 0.623+0.782i  | -0.223+0.975i | -0.901+0.434i | -0.901-0.434i | -0.223-0.975i | 0.623-0.782i  |
+| 1+0i | -0.223+0.975i | -0.901-0.434i | 0.623-0.782i  | 0.623+0.782i  | -0.901+0.434i | -0.223-0.975i |
+| 1+0i | -0.901+0.434i | 0.623-0.782i  | -0.223+0.975i | -0.223-0.975i | 0.623+0.782i  | -0.901-0.434i |
+| 1+0i | -0.901-0.434i | 0.623+0.782i  | -0.223-0.975i | -0.223+0.975i | 0.623-0.782i  | -0.901+0.434i |
+| 1+0i | -0.223-0.975i | -0.901+0.434i | 0.623+0.782i  | 0.623-0.782i  | -0.901-0.434i | -0.223+0.975i |
+| 1+0i | 0.623-0.782i  | -0.223-0.975i | -0.901-0.434i | -0.901+0.434i | -0.223+0.975i | 0.623+0.782i  |
+#+END_SRC
+
+Looking at the real components of the columns - there is one constant component (the first column) and then /n/ samples of the /cosine/ function over one oscillation for the second column, /n/ samples over 2 periods for the 3rd column, /n/ samples over 3 periods.. etc. \\
+\real(*F*) =
+| 1 | 1                 | 1                 | 1                  | .. |
+| 1 | cos(1*2\pi/n)     | cos(2*2\pi/n)     | cos(3*2\pi/n\)     | .. |
+| 1 | cos(2*2\pi/n)     | cos(4*2\pi/n)     | cos(6*2\pi/n)      | .. |
+| 1 | cos(3*2\pi/n)     | cos(6*2\pi/n)     | cos(9*2\pi/n)      | .. |
+| 1 | ...               | ...               | ...                | .. |
+| 1 | cos([n-1]*2\pi/n) | cos(2[n-1]2\pi/n) | cos(3[n-1]*2\pi/n) | .. |
+
+If your input is over 1 second then this maps to a sampled cosine function of 1Hz, 2Hz, 3Hz, etc..\\
+#+BEGIN_SRC octave
+  n= 7
+  nthRoot = exp(i*2*pi./n)
+  F=zeros(n,0)
+  for k = 0:(n-1)
+    F=horzcat(F,(nthRoot.^((0:(n-1))*k)).')
+  end
+  ans = real(round(F.*1000)./1000)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 |      1 |      1 |      1 |      1 |      1 |      1 |
+| 1 |  0.623 | -0.223 | -0.901 | -0.901 | -0.223 |  0.623 |
+| 1 | -0.223 | -0.901 |  0.623 |  0.623 | -0.901 | -0.223 |
+| 1 | -0.901 |  0.623 | -0.223 | -0.223 |  0.623 | -0.901 |
+| 1 | -0.901 |  0.623 | -0.223 | -0.223 |  0.623 | -0.901 |
+| 1 | -0.223 | -0.901 |  0.623 |  0.623 | -0.901 | -0.223 |
+| 1 |  0.623 | -0.223 | -0.901 | -0.901 | -0.223 |  0.623 |
+#+END_SRC
+However you will notice that there is a symmetry around the middle axis and higher frequencies look identical to lower frequencies (and hence the real values don't form an orthogonal basis)
+- *\xi^{n-k}* = cos((n-k)(2\pi{}/n)+isin((n-k)(2\pi{}/n)=cos(2\pi+2\pi{}k/n)+isin(2\pi+2\pi{}k/n)
+b/c /sin(2\pi+x)=sin(x)/ we simplify
+- = cos(2\pi{}k/n)+isin(2\pi{}k/n) = *\xi^{k}*
+The complex numbers are similarly not orthogonal, just the /n-k^{th}/ column is the negative of the /k^{th}/ column
+
+Since each series (irrespective of the /k/ exponent) has length /n^{1/2}/ (remember that the self-inner norms equal /n/), all the columns of *F* can be normalized in one go by dividing the matrix by /n^{1/2}/. The resulting matrix *(1/n^{1/2})F* is now even better b/c it's orthonormal/unitary. Therefore its inverse is just its Hermitian transpose.
+
+ - [(1/n^{1/2})F]^{-1} = [(1/n^{1/2})F]^{*}
+ - F^{-1} = (1/n)F^{*}
+ In *F^{-1}F* the diagonal elements will be the column magnitudes, which have been normalized to /1/, and the off diagonal elements will be inner products of orthogonal vectors and therefore /0/ - so the product will give us the identity matrix *I*
+
+#+BEGIN_SRC octave
+  n= 7
+  nthRoot = exp(i*2*pi./n)
+  F=zeros(n,0)
+  for k = 0:(n-1)
+    F=horzcat(F,(nthRoot.^((0:(n-1))*k)).')
+  end
+
+  F = F./sqrt(n) %Normalize the Fourier matrix
+  ans = real(round(F*F'.*1000)./1000)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| 0 | 0 | 0 | 0 | 1 | 0 | 0 |
+| 0 | 0 | 0 | 0 | 0 | 1 | 0 |
+| 0 | 0 | 0 | 0 | 0 | 0 | 1 |
+#+END_SRC
+
+* Frequency Space?
+We constructed a very convenient basis that's easily invertible and independent of the input and we can now easily move to the basis and back but it's not exactly what one would imagine as "frequency space" and a few things are unresolved
+
+** How does a sinusoidal look in this basis?
+
+Since each column is a mixture of real and imaginary samples of sine/cosine functions we at first glance don't have a straight correspondance between frequencies and the column number.\\
+Reusing the trigonometric identities: 
+ - sin(-\theta) = -sin(\theta)
+ - cos(-\theta) = cos(\theta)
+We can carefully pair Euler functions to get back bare sine/cosine functions with no imaginary parts
+ - [e^{i\theta} + e^{-i\theta}]/2 = [cos(\theta) + isin(\theta) + cos(-\theta) + isin(-\theta)]/2 = *cos(\theta)*
+ - [e^{i\theta} - e^{-i\theta}]/2i = [cos(\theta) + isin(\theta) - cos(-\theta) - isin(-\theta)]/2i = *sin(\theta)*
+#+BEGIN_SRC octave
+samples=[0:0.3:(2*pi)]
+round(cos(samples).*100)./100
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |
+#+END_SRC
+
+#+BEGIN_SRC octave
+samples=[0:0.3:(2*pi)]
+round((exp(i*samples)+exp(-i*samples))./2.*100)./100
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |
+#+END_SRC
+If we put in /-2\pi\phi/n/ for /\theta/  we back our familiar roots of unity:
+ - [\xi^{-\phi} + \xi^{\phi}]/2 = cos(2\pi\phi/n)
+ - n*[\xi^{-\phi} + \xi^{\phi}]/2 = cos(2\pi\phi)
+ - [\xi^{-\phi} - \xi^{\phi}]/2i = sin(2\pi\phi/n)
+ - n*[\xi^{-\phi} - \xi^{\phi}]/2i = sin(2\pi\phi)
+#+BEGIN_QUOTE
+*Note*: b/c these are cyclical functions:
+ - sin(-\theta) = sin(2\pi - \theta)
+ - cos(-\theta) = cos(2\pi - \theta)
+ - e^{-i\theta} = e^{i(2\pi-\theta)}
+ - \xi^-k = \xi^{n-k}
+#+END_QUOTE
+With some rearranging we can rewrite these as:
+ - cos(2\pi\phi) = n*[\xi^{n-\phi} + \xi^{\phi}]/2
+ - sin(2\pi\phi) = n*[\xi^{n-\phi} - \xi^{\phi}]/2i
+and if /\phi/ is equal to a /k/ value, then this will be equal to basis vectors in our fourier matrix.
+
+For instance if /\phi/ = 3 we can pick an /x/
+- x = [ 0 0 n/2 0 0 .. 0 0 n/2 0 0]_{1,n}
+So that:
+- cos(2\pi * 3) = F^{*}x^{T}
+
+Similarly with the sine function, except with an extra minus sign:
+- y = [ 0 0 -n/2i 0 0 .. 0 0 n/2i 0 0]_{1,n}
+So that:
+- sin(2\pi * 3) = F^{*}y^{T}
+
+Both of these matrix-vector products are always producing real values and complex coordinate value has a real and imaginary part, so it stands for both a have a sine and a cosine of it's corresponding basis vector frequency.
+
+Furthermore there is a consistent symmetry between the n^{th} and (n-\phi)^th coordinate. This symmetry in both real and imaginary terms the first n/2 terms tell us everything about the oscillating components of our input. You can completely disregard the second n/2 terms.
+#+BEGIN_QUOTE
+*Note* This doesn't represent a loss of information. The input had *n* real values the output has *n/2* complex coordinates (each made of 2 values).\\
+*Note* If the input is complex then this symmertry won't hold. But in most applications a complex input is not meaningful
+#+END_QUOTE
+
+** How does a phase shift look in this basis?
+Notice how each the real part of the coordinate is making /cosine/ waves and the /imaginary/ is making sine waves. Both are present in the final complex coordinate value and an arbitrary coordinate value will generate one of both.
+- v = \real(v) + \image(v)
+- vF^{*} = \real(v)F^{*} + \image(v)F^{*} = \alpha sin(...) + \beta cos(...)
+Sinusoidals have an amazing property, that if you add sinusoidals that have the same frequency but different amplitudes and/or phase you always get back just one sinusoidal of that frequency. 
+
+In our case we are simply adding a /sine/ and /cosine/ and this additive property as the consequency of the trig identity:
+- sin(A+B) = sin(A)cos(B)+cos(A)sin(B)
+Now given any /sine/ wave with a phase shift we can decompose it into the sum of a /sine/ and /cosine/
+- A\sin(\omega t + \phi)
+- = A\sin(\phi)cos(\omega{}t)+Acos(\phi)sin(\omega{} t)
+- = A_{1}cos(\omega t) + A_{2}sin(\omega t)  /.. bc \phi is a constant/
+Working back we get the general rules for *harmonic addition*
+- \alpha sin(\omega{}t) + \beta cos(\omega{}t) = \gamma sin(\omega{}t+\theta)
+- \gamma = \radic[\alpha^{2}+\beta^{2}]
+- \theta = atan(\beta/\alpha)
+So these sine/cosine functions of the same frequency in conjuction represent a phase shifted sine function.
+
+It also means that if your phase shifts (say your input is delayed) then the real and imaginary coordiante components will fluctuate, but the norm/length will remain constant b/c  \radic[\alpha^{2}+\beta^{2}] will always be equal to the sine wave's amplitude \gamma.
+
+For our generic input signal *x* if we take the norm of *Fx* (or more simply just do *Fx(Fx)^{*}*) you will get the amplitude at each frequency component (at the expense of loosing all phase information) and you can then draw a spectrogram
+
+This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2\pi\phi) will fluctuate with /\phi/ it's matching Euler basis vector /A\xi^{n-\phi}/ will have constant magnitude /A/ for all /\phi/ (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
+
+** How does a frequency who's period isn't a whole fraction of the sample rate come out in this basis?
+
+All the previous math had assumed for simplicity that the input was at a frequency that matches one of the basis vectors - that it in effect produced one coordinate point. But how about if /\phi/ is not equal to a /k/ value?
+
