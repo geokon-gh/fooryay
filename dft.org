@@ -470,11 +470,7 @@ We constructed a very convenient basis that's easily invertible and independent 
 
 ** How does a sinusoidal look in this basis?
 
-Since each column is a mixture of real and imaginary samples of sine/cosine functions we at first glance don't have a straight correspondance between frequencies and the column number.\\
-Reusing the trigonometric identities: 
- - sin(-\theta) = -sin(\theta)
- - cos(-\theta) = cos(\theta)
-We can carefully pair Euler functions to get back bare sine/cosine functions with no imaginary parts
+If we can carefully pair Euler functions we get back bare sine/cosine functions with no imaginary parts
  - [e^{i\theta} + e^{-i\theta}]/2 = [cos(\theta) + isin(\theta) + cos(-\theta) + isin(-\theta)]/2 = *cos(\theta)*
  - [e^{i\theta} - e^{-i\theta}]/2i = [cos(\theta) + isin(\theta) - cos(-\theta) - isin(-\theta)]/2i = *sin(\theta)*
 #+BEGIN_SRC octave
@@ -496,22 +492,22 @@ round((exp(i*samples)+exp(-i*samples))./2.*100)./100
 #+BEGIN_SRC org
 | 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |
 #+END_SRC
-If we put in /-2\pi\phi/n/ for /\theta/  we back our familiar roots of unity:
- - [\xi^{-\phi} + \xi^{\phi}]/2 = cos(2\pi\phi/n)
- - n*[\xi^{-\phi} + \xi^{\phi}]/2 = cos(2\pi\phi)
- - [\xi^{-\phi} - \xi^{\phi}]/2i = sin(2\pi\phi/n)
- - n*[\xi^{-\phi} - \xi^{\phi}]/2i = sin(2\pi\phi)
+
+We can subsitute /\theta/ with /-2\pi{}\phi{}/n/ to get our more familiar Fourier series form:
+ - cos(2\pi{}\phi{}/n) = [\xi^{k} + \xi^{-\phi{}}]/2
+ - sin(2\pi{}\phi{}/n) = [\xi^{k} - \xi^{-\phi{}}]/2i
 #+BEGIN_QUOTE
 *Note*: b/c these are cyclical functions:
  - sin(-\theta) = sin(2\pi - \theta)
  - cos(-\theta) = cos(2\pi - \theta)
  - e^{-i\theta} = e^{i(2\pi-\theta)}
- - \xi^-k = \xi^{n-k}
+ - \xi^-\phi{} = \xi^{n-\phi{}}
 #+END_QUOTE
 With some rearranging we can rewrite these as:
  - cos(2\pi\phi) = n*[\xi^{n-\phi} + \xi^{\phi}]/2
  - sin(2\pi\phi) = n*[\xi^{n-\phi} - \xi^{\phi}]/2i
-and if /\phi/ is equal to a /k/ value, then this will be equal to basis vectors in our fourier matrix.
+
+And these now will correspond to basis vectors in our fourier matrix.
 
 For instance if /\phi/ = 3 we can pick an /x/
 - x = [ 0 0 n/2 0 0 .. 0 0 n/2 0 0]_{1,n}
@@ -523,23 +519,15 @@ Similarly with the sine function, except with an extra minus sign:
 So that:
 - sin(2\pi * 3) = F^{*}y^{T}
 
-Both of these matrix-vector products are always producing real values and complex coordinate value has a real and imaginary part, so it stands for both a have a sine and a cosine of it's corresponding basis vector frequency.
-
-Furthermore there is a consistent symmetry between the n^{th} and (n-\phi)^th coordinate. This symmetry in both real and imaginary terms the first n/2 terms tell us everything about the oscillating components of our input. You can completely disregard the second n/2 terms.
-#+BEGIN_QUOTE
-*Note* This doesn't represent a loss of information. The input had *n* real values the output has *n/2* complex coordinates (each made of 2 values).\\
-*Note* If the input is complex then this symmertry won't hold. But in most applications a complex input is not meaningful
-#+END_QUOTE
-
 ** How does a phase shift look in this basis?
-Notice how each the real part of the coordinate is making /cosine/ waves and the /imaginary/ is making sine waves. Both are present in the final complex coordinate value and an arbitrary coordinate value will generate one of both.
+Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combinging the two, each complex coordinate in the fourier basis generates one of each
 - v = \real(v) + \image(v)
 - vF^{*} = \real(v)F^{*} + \image(v)F^{*} = \alpha sin(...) + \beta cos(...)
-Sinusoidals have an amazing property, that if you add sinusoidals that have the same frequency but different amplitudes and/or phase you always get back just one sinusoidal of that frequency. 
+Sinusoidals have an amazing property that if you add sinusoidals of the same frequency (but different amplitudes and/or phases) you always get back just one sinusoidal of that frequency.
 
-In our case we are simply adding a /sine/ and /cosine/ and this additive property as the consequency of the trig identity:
+In our case we are simply adding the /sine/ and /cosine/ and the additive property comes out of the trig identity:
 - sin(A+B) = sin(A)cos(B)+cos(A)sin(B)
-Now given any /sine/ wave with a phase shift we can decompose it into the sum of a /sine/ and /cosine/
+So given any /sine/ wave with a phase shift we can decompose it into the sum of a /sine/ and /cosine/
 - A\sin(\omega t + \phi)
 - = A\sin(\phi)cos(\omega{}t)+Acos(\phi)sin(\omega{} t)
 - = A_{1}cos(\omega t) + A_{2}sin(\omega t)  /.. bc \phi is a constant/
@@ -547,14 +535,21 @@ Working back we get the general rules for *harmonic addition*
 - \alpha sin(\omega{}t) + \beta cos(\omega{}t) = \gamma sin(\omega{}t+\theta)
 - \gamma = \radic[\alpha^{2}+\beta^{2}]
 - \theta = atan(\beta/\alpha)
-So these sine/cosine functions of the same frequency in conjuction represent a phase shifted sine function.
 
-It also means that if your phase shifts (say your input is delayed) then the real and imaginary coordiante components will fluctuate, but the norm/length will remain constant b/c  \radic[\alpha^{2}+\beta^{2}] will always be equal to the sine wave's amplitude \gamma.
+So when the complex coordinate gives us a sine and cosine of the same frequency what it's really giving us is a phase shifted sinusoid. However the harmonix addition formula gives us a few crucial extra guarantees. Even if your input phase shifts (say there is a delayed in recording) while the real and imaginary coordiante components will fluctuate the norm/length will remain constant b/c  \radic[\alpha^{2}+\beta^{2}] will always be equal to true sine wave's amplitude \gamma.
 
-For our generic input signal *x* if we take the norm of *Fx* (or more simply just do *Fx(Fx)^{*}*) you will get the amplitude at each frequency component (at the expense of loosing all phase information) and you can then draw a spectrogram
+Numerically for a generic input signal *x* if we take the norm of *Fx* (or more simply just do *Fx(Fx)^{*}*) you will get the amplitude at each frequency component (at the expense of loosing all phase information) and we can then draw a spectrogram
 
-This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2\pi\phi) will fluctuate with /\phi/ it's matching Euler basis vector /A\xi^{n-\phi}/ will have constant magnitude /A/ for all /\phi/ (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
+This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2\pi\phi) will fluctuate with /\phi/ it's corresponding Euler basis vector /A\xi^{\phi}/ will have constant magnitude /A/ for all /\phi/ (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
 
+** Which frequencies are observable?
+When constructing our /sine/ and /cosine/ we noted in passing that /\xi^-\phi{} = \xi^{n-\phi{}}/ and we notice how each sigular frequency takes up two spots in the coordinate vector - one at /\phi/ and one at /n-\phi/. This is an artifact of our sampling. Regular samples at one frequency will look identical to samples at other frequencies. The problems (and potential advantages) of frequency replication and aliasing [[.aliasing.html][are discussed separately]].
+
+In practical terms this means that you can't distinguish /\phi/ and /n-\phi/ frequencies, so you need to choose an /n/ large enough that all the frequencies lie between 0 and /n/2/. And in the final Fourier basis you can entirely disregard basis vectors from /n/2/ to /n/ b/c they will be the mirror of the /0/ to /n/2/ range
+#+BEGIN_QUOTE
+*Note* This doesn't represent a loss of information. The input had *n* real values the output has *n/2* complex coordinates (each made of 2 values).\\
+*Note* If the input is complex then this symmertry won't hold. But in most applications a complex input is not meaningful
+#+END_QUOTE
 ** How does a frequency who's period isn't a whole fraction of the sample rate come out in this basis?
 
 All the previous math had assumed for simplicity that the input was at a frequency that matches one of the basis vectors - that it in effect produced one coordinate point. But how about if /\phi/ is not equal to a /k/ value?
