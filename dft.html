@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>Discrete Fourier Transform</title>
-<!-- 2019-10-27 日 14:58 -->
+<!-- 2019-10-28 一 18:15 -->
 <meta  charset="utf-8">
 <meta  name="generator" content="Org-mode">
 <meta  name="author" content="George Kontsevich">
@@ -61,7 +61,7 @@ Complex numbers are of the form <b>a+ib</b> where <b>i= &radic;(-1)</b> and <b>a
 </p>
 
 <p>
-To envision a complex plane we treat the <i>real</i> component <b>a</b> acting as the <i>x</i> and the <i>imaginary</i> component <b>b</b> acting as the <i>y</i>.
+To envision a complex plane we treat the <i>real</i> component <b>a</b> acting as the <i>x</i> and the <i>imaginary</i> component <b>b</b> actving as the <i>y</i>.
 Like 2D coordinates, we can add/translate them and they can be scaled
 </p>
 <ul class="org-ul">
@@ -251,14 +251,15 @@ v<span style="color: #006FE0;">'</span>
 
 <div class="org-src-container">
 
-<pre class="src src-octave">v <span style="color: #006FE0;">=</span> [3<span style="color: #006FE0;">+</span>4i 6<span style="color: #006FE0;">+</span>8i]
-v<span style="color: #006FE0;">*</span>v<span style="color: #006FE0;">'</span>
+<pre class="src src-octave">v<span style="color: #006FE0;">*</span>v<span style="color: #006FE0;">'</span>
 </pre>
 </div>
 
-<pre class="example">
-125
+<div class="org-src-container">
+
+<pre class="src src-org">125
 </pre>
+</div>
 
 <p>
 When the vector values are all real it will behave exactly like a transpose and when the values are complex, it will take their conjugates and give us scalar/real values of each complex values' magnitude
@@ -363,8 +364,10 @@ A complete proof of this identity is a bit long, but the steps are:
 <li>We then describe e<sup>i&theta;</sup> around <i>0</i> in terms of the Taylor/Maclaurin Series
 </li>
 <li>Half the terms of the Taylor/Maclaurin Series will be imaginary and half real. 
-</li>
+<ul class="org-ul">
 <li>The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function
+</li>
+</ul>
 </li>
 </ul>
 <div class="org-src-container">
@@ -497,6 +500,16 @@ The typical notation here is to say
 </ul>
 <p>
 This &xi; is called the <b>n<sup>th</sup> root of unity</b>
+</p>
+<div class="org-src-container">
+
+<pre class="src src-octave"><span style="color: #0000FF;">function</span> res <span style="color: #006FE0;">=</span> <span style="color: #006699;">rootOfUnity</span>(n)
+  res <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+<span style="color: #0000FF;">end</span>
+</pre>
+</div>
+
+<p>
 By extension we can also see that:
 </p>
 <ul class="org-ul">
@@ -508,8 +521,7 @@ By extension we can also see that:
 
 <div class="org-src-container">
 
-<pre class="src src-octave">n<span style="color: #006FE0;">=</span>7
-exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
+<pre class="src src-octave">rootOfUnity(7)
 </pre>
 </div>
 
@@ -521,15 +533,14 @@ exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</spa
 
 <div class="org-src-container">
 
-<pre class="src src-octave">n <span style="color: #006FE0;">=</span> 7
-seventh_root_of_unity <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">/</span>n)
-seventh_root_of_unity<span style="color: #006FE0;">^</span>n
+<pre class="src src-octave">n <span style="color: #006FE0;">=</span> 7<span style="color: #006FE0;">;</span>
+rootOfUnity(n)<span style="color: #006FE0;">^</span>n
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-org">1-4.996003610813204e-16i
+<pre class="src src-org">ans =          1 -      5E-16i
 </pre>
 </div>
 </div>
@@ -547,25 +558,28 @@ The Fourier series is a very special sum of the exponents of an n<sup>th</sup> r
 </ul>
 <div class="org-src-container">
 
-<pre class="src src-octave">k<span style="color: #006FE0;">=</span>3<span style="color: #006FE0;">,</span> n<span style="color: #006FE0;">=</span> 5
-nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
-fourierSeries <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k)
+<pre class="src src-octave"><span style="color: #0000FF;">function</span> res <span style="color: #006FE0;">=</span> <span style="color: #006699;">fourierSeries</span>(n<span style="color: #006FE0;">,</span>k)
+  res <span style="color: #006FE0;">=</span> rootOfUnity(n)<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k)<span style="color: #006FE0;">;</span>
+<span style="color: #0000FF;">end</span>
+</pre>
+</div>
+<div class="org-src-container">
 
-ans<span style="color: #006FE0;">=</span>disp((fourierSeries)<span style="color: #006FE0;">.'</span>)
+<pre class="src src-octave">ans<span style="color: #006FE0;">=</span>disp(
+        fourierSeries(5<span style="color: #006FE0;">,</span>3)<span style="color: #006FE0;">.'</span>)
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1.00000 + 0.00000i  |</span>
-<span style="color: #006400; background-color: #EAFFEA;">| -0.80902 - 0.58779i |</span>
-<span style="color: #006400; background-color: #EAFFEA;">| 0.30902 + 0.95106i  |</span>
-<span style="color: #006400; background-color: #EAFFEA;">| 0.30902 - 0.95106i  |</span>
-<span style="color: #006400; background-color: #EAFFEA;">| -0.80902 + 0.58779i |</span>
-<span style="color: #006400; background-color: #EAFFEA;">|                     |</span>
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 +          0i      |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| -0.809 -      0.588i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0.309 +      0.951i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0.309 -      0.951i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| -0.809 +      0.588i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">|                      |</span>
 </pre>
 </div>
-
 <p>
 Here the <i>k</i> can be any integer value, but the sum will always maintain the property that if it's multiplied by <i>&xi;<sup>k</sup></i> we get the same sequence back. The last term goes to <i>&xi;<sup>nk</sup> = 1</i> and the remaining terms in effect shift places giving us:
 </p>
@@ -575,22 +589,20 @@ Here the <i>k</i> can be any integer value, but the sum will always maintain the
 </ul>
 <div class="org-src-container">
 
-<pre class="src src-octave">k<span style="color: #006FE0;">=</span>3<span style="color: #006FE0;">,</span> n<span style="color: #006FE0;">=</span> 5
-nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
-fourierSeries <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k)
-
-ans<span style="color: #006FE0;">=</span>disp((fourierSeries<span style="color: #006FE0;">.*</span>(nthRoot<span style="color: #006FE0;">^</span>k))<span style="color: #006FE0;">.'</span>)
+<pre class="src src-octave">n<span style="color: #006FE0;">=</span>5<span style="color: #006FE0;">,</span>k<span style="color: #006FE0;">=</span>3
+ans<span style="color: #006FE0;">=</span>disp(
+        (fourierSeries(n<span style="color: #006FE0;">,</span>k)<span style="color: #006FE0;">.*</span>(nthRoot<span style="color: #006FE0;">^</span>k))<span style="color: #006FE0;">.'</span>)
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| -0.80902 - 0.58779i |</span>
-<span style="color: #006400; background-color: #EAFFEA;">| 0.30902 + 0.95106i  |</span>
-<span style="color: #006400; background-color: #EAFFEA;">| 0.30902 - 0.95106i  |</span>
-<span style="color: #006400; background-color: #EAFFEA;">| -0.80902 + 0.58779i |</span>
-<span style="color: #006400; background-color: #EAFFEA;">| 1.00000 - 0.00000i  |</span>
-<span style="color: #006400; background-color: #EAFFEA;">|                     |</span>
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| -0.809 -      0.588i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0.309 +      0.951i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 0.309 -      0.951i  |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| -0.809 +      0.588i |</span>
+<span style="color: #006400; background-color: #EAFFEA;">| 1 -   8.33E-16i      |</span>
+<span style="color: #006400; background-color: #EAFFEA;">|                      |</span>
 </pre>
 </div>
 
@@ -626,9 +638,8 @@ And therefore..
 </ul>
 <div class="org-src-container">
 
-<pre class="src src-octave">n<span style="color: #006FE0;">=</span>7
-nthroot<span style="color: #006FE0;">=</span>exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
-sum(nthroot<span style="color: #006FE0;">.^</span>(0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)))
+<pre class="src src-octave">n<span style="color: #006FE0;">=</span>7<span style="color: #006FE0;">,</span>k<span style="color: #006FE0;">=</span>1
+sum(fourierSeries(n<span style="color: #006FE0;">,</span>k))
 </pre>
 </div>
 
@@ -639,6 +650,7 @@ sum(nthroot<span style="color: #006FE0;">.^</span>(0<span style="color: #006FE0;
 </div>
 </div>
 </div>
+
 
 <div id="outline-container-sec-8" class="outline-2">
 <h2 id="sec-8">Fourier Vectors</h2>
@@ -659,10 +671,7 @@ It turns out that Fourier series, when places in a vector with different values 
 <div class="org-src-container">
 
 <pre class="src src-octave">r<span style="color: #006FE0;">=</span>7<span style="color: #006FE0;">,</span> s<span style="color: #006FE0;">=</span>13<span style="color: #006FE0;">,</span> n<span style="color: #006FE0;">=</span> 11
-nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
-fourierVectorR <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>r)
-fourierVectorS <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>s)
-fourierVectorR<span style="color: #006FE0;">*</span>fourierVectorS<span style="color: #006FE0;">'</span>
+fourierSeries(n<span style="color: #006FE0;">,</span>r)<span style="color: #006FE0;">*</span>fourierSeries(n<span style="color: #006FE0;">,</span>s)<span style="color: #006FE0;">'</span>
 </pre>
 </div>
 
@@ -688,10 +697,7 @@ Now <i>r-s</i> is just another <i>k</i> value from our Fourier series and so the
 <div class="org-src-container">
 
 <pre class="src src-octave">r<span style="color: #006FE0;">=</span>7<span style="color: #006FE0;">,</span> s<span style="color: #006FE0;">=</span>7<span style="color: #006FE0;">,</span> n<span style="color: #006FE0;">=</span> 11
-nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
-fourierVectorR <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>r)
-fourierVectorS <span style="color: #006FE0;">=</span> nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>s)
-fourierVectorR<span style="color: #006FE0;">*</span>fourierVectorS<span style="color: #006FE0;">'</span>
+fourierSeries(n<span style="color: #006FE0;">,</span>r)<span style="color: #006FE0;">*</span>fourierSeries(n<span style="color: #006FE0;">,</span>s)<span style="color: #006FE0;">'</span>
 </pre>
 </div>
 
@@ -786,13 +792,19 @@ We've just shown that the fourier vectors are orthogonal as long as the <i>k</i>
 
 <div class="org-src-container">
 
-<pre class="src src-octave">n<span style="color: #006FE0;">=</span> 7
-nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
-F<span style="color: #006FE0;">=</span>zeros(n<span style="color: #006FE0;">,</span>0)
-<span style="color: #0000FF;">for</span> k <span style="color: #006FE0;">=</span> 0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)
-  F<span style="color: #006FE0;">=</span>horzcat(F<span style="color: #006FE0;">,</span>(nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k))<span style="color: #006FE0;">.'</span>)
+<pre class="src src-octave"><span style="color: #0000FF;">function</span> F <span style="color: #006FE0;">=</span> <span style="color: #006699;">fourierMatrix</span>(n)
+  F<span style="color: #006FE0;">=</span>zeros(n<span style="color: #006FE0;">,</span>0)
+  <span style="color: #0000FF;">for</span> k <span style="color: #006FE0;">=</span> 0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)
+    F<span style="color: #006FE0;">=</span>horzcat(F<span style="color: #006FE0;">,</span>fourierSeries(n<span style="color: #006FE0;">,</span>k)<span style="color: #006FE0;">.'</span>)<span style="color: #006FE0;">;</span>
+  <span style="color: #0000FF;">end</span>
 <span style="color: #0000FF;">end</span>
-ans <span style="color: #006FE0;">=</span> round(F<span style="color: #006FE0;">.*</span>1000)<span style="color: #006FE0;">./</span>1000
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-octave">F <span style="color: #006FE0;">=</span> fourierMatrix(7)<span style="color: #006FE0;">;</span>
+round(F<span style="color: #006FE0;">.*</span>1000)<span style="color: #006FE0;">./</span>1000
 </pre>
 </div>
 
@@ -882,13 +894,8 @@ If your input is over 1 second then this maps to a sampled cosine function of 1H
 </p>
 <div class="org-src-container">
 
-<pre class="src src-octave">n<span style="color: #006FE0;">=</span> 7
-nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
-F<span style="color: #006FE0;">=</span>zeros(n<span style="color: #006FE0;">,</span>0)
-<span style="color: #0000FF;">for</span> k <span style="color: #006FE0;">=</span> 0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)
-  F<span style="color: #006FE0;">=</span>horzcat(F<span style="color: #006FE0;">,</span>(nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k))<span style="color: #006FE0;">.'</span>)
-<span style="color: #0000FF;">end</span>
-ans <span style="color: #006FE0;">=</span> real(round(F<span style="color: #006FE0;">.*</span>1000)<span style="color: #006FE0;">./</span>1000)
+<pre class="src src-octave">realF <span style="color: #006FE0;">=</span> real(F)<span style="color: #006FE0;">;</span>
+round(realF<span style="color: #006FE0;">.*</span>1000)<span style="color: #006FE0;">./</span>1000
 </pre>
 </div>
 
@@ -903,6 +910,7 @@ ans <span style="color: #006FE0;">=</span> real(round(F<span style="color: #006F
 <span style="color: #006400; background-color: #EAFFEA;">| 1 |  0.623 | -0.223 | -0.901 | -0.901 | -0.223 |  0.623 |</span>
 </pre>
 </div>
+
 <p>
 However you will notice that there is a symmetry around the middle axis and higher frequencies look identical to lower frequencies (and hence the real values don't form an orthogonal basis)
 </p>
@@ -937,15 +945,9 @@ In <b>F<sup>-1</sup>F</b> the diagonal elements will be the column magnitudes, w
 
 <div class="org-src-container">
 
-<pre class="src src-octave">n<span style="color: #006FE0;">=</span> 7
-nthRoot <span style="color: #006FE0;">=</span> exp(i<span style="color: #006FE0;">*</span>2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">./</span>n)
-F<span style="color: #006FE0;">=</span>zeros(n<span style="color: #006FE0;">,</span>0)
-<span style="color: #0000FF;">for</span> k <span style="color: #006FE0;">=</span> 0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1)
-  F<span style="color: #006FE0;">=</span>horzcat(F<span style="color: #006FE0;">,</span>(nthRoot<span style="color: #006FE0;">.^</span>((0<span style="color: #006FE0;">:</span>(n<span style="color: #006FE0;">-</span>1))<span style="color: #006FE0;">*</span>k))<span style="color: #006FE0;">.'</span>)
-<span style="color: #0000FF;">end</span>
-
-F <span style="color: #006FE0;">=</span> F<span style="color: #006FE0;">./</span>sqrt(n) <span style="color: #8D8D84; font-style: italic;">%Normalize the Fourier matrix</span>
-ans <span style="color: #006FE0;">=</span> real(round(F<span style="color: #006FE0;">*</span>F<span style="color: #006FE0;">'.*</span>1000)<span style="color: #006FE0;">./</span>1000)
+<pre class="src src-octave">normalizedF <span style="color: #006FE0;">=</span> F<span style="color: #006FE0;">./</span>sqrt(n) <span style="color: #8D8D84; font-style: italic;">%Normalize the Fourier matrix</span>
+I <span style="color: #006FE0;">=</span> normalizedF<span style="color: #006FE0;">*</span>normalizedF<span style="color: #006FE0;">'</span>
+real(round(I<span style="color: #006FE0;">.*</span>1000)<span style="color: #006FE0;">./</span>1000)
 </pre>
 </div>
 
@@ -985,27 +987,27 @@ If we can carefully pair Euler functions we get back bare sine/cosine functions 
 </ul>
 <div class="org-src-container">
 
-<pre class="src src-octave">samples<span style="color: #006FE0;">=</span>[0<span style="color: #006FE0;">:</span>0.3<span style="color: #006FE0;">:</span>(2<span style="color: #006FE0;">*</span>pi)]
+<pre class="src src-octave">n<span style="color: #006FE0;">=</span>9
+samples<span style="color: #006FE0;">=</span>[0<span style="color: #006FE0;">:</span>(2<span style="color: #006FE0;">*</span>pi<span style="color: #006FE0;">/</span>n)<span style="color: #006FE0;">:</span>(2<span style="color: #006FE0;">*</span>pi)]
 round(cos(samples)<span style="color: #006FE0;">.*</span>100)<span style="color: #006FE0;">./</span>100
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |</span>
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 | 1 |</span>
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-octave">samples<span style="color: #006FE0;">=</span>[0<span style="color: #006FE0;">:</span>0.3<span style="color: #006FE0;">:</span>(2<span style="color: #006FE0;">*</span>pi)]
-round((exp(i<span style="color: #006FE0;">*</span>samples)<span style="color: #006FE0;">+</span>exp(<span style="color: #006FE0;">-</span>i<span style="color: #006FE0;">*</span>samples))<span style="color: #006FE0;">./</span>2<span style="color: #006FE0;">.*</span>100)<span style="color: #006FE0;">./</span>100
+<pre class="src src-octave">round((exp(i<span style="color: #006FE0;">*</span>samples)<span style="color: #006FE0;">+</span>exp(<span style="color: #006FE0;">-</span>i<span style="color: #006FE0;">*</span>samples))<span style="color: #006FE0;">./</span>2<span style="color: #006FE0;">.*</span>100)<span style="color: #006FE0;">./</span>100
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |</span>
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 | 1 |</span>
 </pre>
 </div>
 
@@ -1048,7 +1050,7 @@ And these now will correspond to basis vectors in our fourier matrix.
 </p>
 
 <p>
-For instance if <i>&phi;</i> = 3 we can pick an <i>x</i>
+For instance if <i>&phi;</i> = 2 we can pick an <i>x</i>
 </p>
 <ul class="org-ul">
 <li>x = [ 0 0 n/2 0 0 .. 0 0 n/2 0 0]<sub>1,n</sub>
@@ -1058,9 +1060,30 @@ For instance if <i>&phi;</i> = 3 we can pick an <i>x</i>
 So that:
 </p>
 <ul class="org-ul">
-<li>cos(2&pi; * 3) = F<sup>*</sup>x<sup>T</sup>
+<li>cos(2&pi; * 2) = (1/n)F<sup>*</sup>x<sup>T</sup>
 </li>
 </ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">real((fourierMatrix(n)<span style="color: #006FE0;">'*</span>[0 0 n<span style="color: #006FE0;">/</span>2 0 0 0 0 n<span style="color: #006FE0;">/</span>2 0]<span style="color: #006FE0;">.'</span>)<span style="color: #006FE0;">./</span>n)<span style="color: #006FE0;">.'</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0.17364817766693 | -0.9396926207859079 | -0.4999999999999988 | 0.7660444431189775 | 0.7660444431189768 | -0.5000000000000001 | -0.9396926207859061 | 0.1736481776669308 |</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-octave">cos(2<span style="color: #006FE0;">*</span>samples)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 0.1736481776669304 | -0.9396926207859083 | -0.5000000000000004 | 0.7660444431189778 | 0.7660444431189781 | -0.4999999999999992 | -0.9396926207859086 | 0.1736481776669297 | 1 |</span>
+</pre>
+</div>
 
 <p>
 Similarly with the sine function, except with an extra minus sign:
@@ -1073,9 +1096,30 @@ Similarly with the sine function, except with an extra minus sign:
 So that:
 </p>
 <ul class="org-ul">
-<li>sin(2&pi; * 3) = F<sup>*</sup>y<sup>T</sup>
+<li>sin(2&pi; * 2) = (1/n)F<sup>*</sup>y<sup>T</sup>
 </li>
 </ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">(real(fourierMatrix(n)<span style="color: #006FE0;">'*</span>[0 0 <span style="color: #006FE0;">-</span>n<span style="color: #006FE0;">/</span>2i 0 0 0 0 n<span style="color: #006FE0;">/</span>2i 0]<span style="color: #006FE0;">.'./</span>n)<span style="color: #006FE0;">'</span>)
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 0 | 0.984807753012207 | 0.3420201433256683 | -0.8660254037844376 | -0.6427876096865384 | 0.6427876096865385 | 0.8660254037844363 | -0.3420201433256689 | -0.9848077530122052 |</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-octave">sin(2<span style="color: #006FE0;">*</span>samples)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 0 | 0.984807753012208 | 0.3420201433256689 | -0.8660254037844384 | -0.6427876096865396 | 0.6427876096865391 | 0.8660254037844392 | -0.342020143325668 | -0.9848077530122081 | -4.898587196589413e-16 |</span>
+</pre>
+</div>
 </div>
 </div>
 
@@ -1083,14 +1127,42 @@ So that:
 <h3 id="sec-10-2">How does a phase shift look in this basis?</h3>
 <div class="outline-text-3" id="text-10-2">
 <p>
-Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combinging the two, each complex coordinate in the fourier basis generates one of each
+Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combining the two, each complex coordinate in the fourier basis generates one of each and the result is purely real
 </p>
 <ul class="org-ul">
 <li>v = &real;(v) + &image;(v)
 </li>
-<li>vF<sup>*</sup> = &real;(v)F<sup>*</sup> + &image;(v)F<sup>*</sup> = &alpha; sin(&#x2026;) + &beta; cos(&#x2026;)
+<li>F<sup>*</sup>v/n = F<sup>*</sup>&real;(v)/n + F<sup>*</sup>&image;(v)/n = &alpha; sin(&#x2026;) + &beta; cos(&#x2026;)
 </li>
 </ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">v <span style="color: #006FE0;">=</span> [0 0 n<span style="color: #006FE0;">/</span>2 0 0 0 0 n<span style="color: #006FE0;">/</span>2 0] .<span style="color: #006FE0;">+</span> [0 0 <span style="color: #006FE0;">-</span>n<span style="color: #006FE0;">/</span>2i 0 0 0 0 n<span style="color: #006FE0;">/</span>2i 0]
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-octave">(real(fourierMatrix(n)<span style="color: #006FE0;">'*</span>v<span style="color: #006FE0;">.'</span>)<span style="color: #006FE0;">./</span>n)<span style="color: #006FE0;">.'</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 1.158455930679137 | -0.5976724774602395 | -1.366025403784437 | 0.1232568334324391 | 1.408832052805515 | 0.3660254037844363 | -1.281712764111575 | -0.8111595753452744 |</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-octave">cos(2<span style="color: #006FE0;">*</span>samples).<span style="color: #006FE0;">+</span>sin(2<span style="color: #006FE0;">*</span>samples)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 1.158455930679138 | -0.5976724774602394 | -1.366025403784439 | 0.1232568334324382 | 1.408832052805517 | 0.3660254037844399 | -1.281712764111577 | -0.8111595753452784 | 0.9999999999999996 |</span>
+</pre>
+</div>
+
 <p>
 Sinusoidals have an amazing property that if you add sinusoidals of the same frequency (but different amplitudes and/or phases) you always get back just one sinusoidal of that frequency.
 </p>
@@ -1124,13 +1196,26 @@ Working back we get the general rules for <b>harmonic addition</b>
 <li>&theta; = atan(&beta;/&alpha;)
 </li>
 </ul>
+<div class="org-src-container">
+
+<pre class="src src-octave">gamma <span style="color: #006FE0;">=</span> sqrt(1<span style="color: #006FE0;">^</span>2<span style="color: #006FE0;">+</span>1<span style="color: #006FE0;">^</span>2) 
+theta <span style="color: #006FE0;">=</span> atan(1)
+gamma<span style="color: #006FE0;">*</span>sin(2<span style="color: #006FE0;">*</span>samples<span style="color: #006FE0;">+</span>theta)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 1.158455930679138 | -0.5976724774602394 | -1.366025403784439 | 0.1232568334324382 | 1.408832052805517 | 0.3660254037844412 | -1.281712764111577 | -0.8111595753452796 | 1 |</span>
+</pre>
+</div>
 
 <p>
-So when the complex coordinate gives us a sine and cosine of the same frequency what it's really giving us is a phase shifted sinusoid. However the harmonix addition formula gives us a few crucial extra guarantees. Even if your input phase shifts (say there is a delayed in recording) while the real and imaginary coordiante components will fluctuate the norm/length will remain constant b/c  &radic;[&alpha;<sup>2</sup>+&beta;<sup>2</sup>] will always be equal to true sine wave's amplitude &gamma;.
+So when the complex coordinate gives us a sine and cosine of the same frequency what it's really giving us is a phase shifted sine wave. However the harmonic addition formula gives us a few crucial extra guarantees. Even if the input phase shifts (say there is a delayed in recording the input signal), while that would lead to a change in the real and imaginary coordinate components, the norm/length will remain constant b/c <i>&radic;[&alpha;<sup>2</sup>+&beta;<sup>2</sup>]</i> will always be equal to true sine wave's amplitude &gamma;.
 </p>
 
 <p>
-Numerically for a generic input signal <b>x</b> if we take the norm of <b>Fx</b> (or more simply just do <b>Fx(Fx)^{</b>}*) you will get the amplitude at each frequency component (at the expense of loosing all phase information) and we can then draw a spectrogram
+Numerically for a generic input signal <b>x</b> if we take the norm<sup>2</sup> with <b>Fx(Fx)<sup>*</sup></b> we will know the amplitude at each frequency component (at the expense of loosing all phase information) and we can then draw a spectrogram
 </p>
 
 <p>

@@ -7,14 +7,18 @@ Using the multiplicative properties of complex numbers we construct an easily-in
 #+BEGIN_SRC octave
 inline code examples are in MATLAB/Octave
 #+END_SRC
+#+PROPERTY: session *Inferior Octave*
+#+PROPERTY: eval never-export
+#+PROPERTY: exports both
+#+PROPERTY: results org
 
 * Complex numbers
 Complex numbers are of the form *a+ib* where *i= \radic(-1)* and *a* and *b* are known as the real and imaginary components of the complex number. The pair (a,b) are often referred to as a point on the complex plane. However the implicit analogy to 2D coordinates is a bit probematic
 
-To envision a complex plane we treat the /real/ component *a* acting as the /x/ and the /imaginary/ component *b* acting as the /y/.
+To envision a complex plane we treat the /real/ component *a* acting as the /x/ and the /imaginary/ component *b* actving as the /y/.
 Like 2D coordinates, we can add/translate them and they can be scaled
  - (a+ib) + (c+id) = (a+c) + i(bd)
-#+BEGIN_SRC octave :results org :export both 
+#+BEGIN_SRC octave
 1+5i + 3+2j
 #+END_SRC
 
@@ -120,12 +124,13 @@ v'
 #+END_SRC
 
 #+BEGIN_SRC octave
-v = [3+4i 6+8i]
 v*v'
 #+END_SRC
 
 #+RESULTS:
-: 125
+#+BEGIN_SRC org
+125
+#+END_SRC
 
  When the vector values are all real it will behave exactly like a transpose and when the values are complex, it will take their conjugates and give us scalar/real values of each complex values' magnitude
 
@@ -170,7 +175,7 @@ A complete proof of this identity is a bit long, but the steps are:
 - i^{n} is a cyclic function with half its terms imaginary and half real
 - We then describe e^{i\theta} around /0/ in terms of the Taylor/Maclaurin Series
 - Half the terms of the Taylor/Maclaurin Series will be imaginary and half real. 
-- The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function
+ - The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function
 #+BEGIN_SRC octave
 123*exp(i*0.321)
 #+END_SRC
@@ -238,13 +243,18 @@ The typical notation here is to say
  - \xi = e^{-i2\pi/n} = \cos(2\pi/n)+i\sin(2\pi/n)
  - \xi^{n}=1
 This \xi is called the *n^{th} root of unity*
+#+BEGIN_SRC octave :results silent
+  function res = rootOfUnity(n)
+    res = exp(i*2*pi./n)
+  end
+#+END_SRC
+
 By extension we can also see that:
  - \xi^{n+j} = \xi^{n}\xi^{j} = \xi^{j}
  - \xi^{nk} = [\xi^{n}]^{k} = [e^{-i2\pi}]^k = 1^k = 1
 
 #+BEGIN_SRC octave
-n=7
-exp(i*2*pi./n)
+rootOfUnity(7)
 #+END_SRC
 
 #+RESULTS:
@@ -252,57 +262,56 @@ exp(i*2*pi./n)
 0.6234898018587336+0.7818314824680298i
 #+END_SRC
 
-#+BEGIN_SRC octave
-n = 7
-seventh_root_of_unity = exp(i*2*pi/n)
-seventh_root_of_unity^n
+#+BEGIN_SRC octave :results output
+n = 7;
+rootOfUnity(n)^n
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-1-4.996003610813204e-16i
+
+ans =          1 -      5E-16i
 #+END_SRC
 
 * Fourier series
 
 The Fourier series is a very special sum of the exponents of an n^{th} root of unity *\xi*
  -  1 + \xi^k + \xi^{2k} + ... + \xi^{(n-2)k} + \xi^{(n-1)k}
-#+BEGIN_SRC octave :results org 
-  k=3, n= 5
-  nthRoot = exp(i*2*pi./n)
-  fourierSeries = nthRoot.^((0:(n-1))*k)
-
-  ans=disp((fourierSeries).')
+#+BEGIN_SRC octave :results silent
+  function res = fourierSeries(n,k)
+    res = rootOfUnity(n).^((0:(n-1))*k);
+  end
+#+END_SRC
+#+BEGIN_SRC octave
+  ans=disp(
+          fourierSeries(5,3).')
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1.00000 + 0.00000i  |
-| -0.80902 - 0.58779i |
-| 0.30902 + 0.95106i  |
-| 0.30902 - 0.95106i  |
-| -0.80902 + 0.58779i |
-|                     |
+| 1 +          0i      |
+| -0.809 -      0.588i |
+| 0.309 +      0.951i  |
+| 0.309 -      0.951i  |
+| -0.809 +      0.588i |
+|                      |
 #+END_SRC
-
 Here the /k/ can be any integer value, but the sum will always maintain the property that if it's multiplied by /\xi^k/ we get the same sequence back. The last term goes to /\xi^{nk} = 1/ and the remaining terms in effect shift places giving us:
  -  \xi^k + \xi^{2k} + \xi^{3k} + ... + \xi^{(n-1)k} + 1
-#+BEGIN_SRC octave :results org 
-  k=3, n= 5
-  nthRoot = exp(i*2*pi./n)
-  fourierSeries = nthRoot.^((0:(n-1))*k)
-
-  ans=disp((fourierSeries.*(nthRoot^k)).')
+#+BEGIN_SRC octave
+  n=5,k=3
+  ans=disp(
+          (fourierSeries(n,k).*(nthRoot^k)).')
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| -0.80902 - 0.58779i |
-| 0.30902 + 0.95106i  |
-| 0.30902 - 0.95106i  |
-| -0.80902 + 0.58779i |
-| 1.00000 - 0.00000i  |
-|                     |
+| -0.809 -      0.588i |
+| 0.309 +      0.951i  |
+| 0.309 -      0.951i  |
+| -0.809 +      0.588i |
+| 1 -   8.33E-16i      |
+|                      |
 #+END_SRC
 
 So we can write
@@ -315,15 +324,15 @@ And therefore..
 .. or to write it out again in full form - for all integer values of /k/
  -  1+\xi^k+\xi^{2k}+...+\xi^{(n-2)k}+\xi^{(n-1)k} = 0
 #+BEGIN_SRC octave
-n=7
-nthroot=exp(i*2*pi./n)
-sum(nthroot.^(0:(n-1)))
+n=7,k=1
+sum(fourierSeries(n,k))
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
 -3.33066907387547e-16
 #+END_SRC
+
 
 * Fourier Vectors
 
@@ -334,10 +343,7 @@ It turns out that Fourier series, when places in a vector with different values 
  - 1 + \xi^{r-s} + \xi^{2(r-s)} + ... + \xi^{(n-2)(r-s)} + \xi^{(n-1)(r-s)}
 #+BEGIN_SRC octave
   r=7, s=13, n= 11
-  nthRoot = exp(i*2*pi./n)
-  fourierVectorR = nthRoot.^((0:(n-1))*r)
-  fourierVectorS = nthRoot.^((0:(n-1))*s)
-  fourierVectorR*fourierVectorS'
+  fourierSeries(n,r)*fourierSeries(n,s)'
 #+END_SRC
 
 #+RESULTS:
@@ -352,10 +358,7 @@ Now /r-s/ is just another /k/ value from our Fourier series and so the sum will 
  - 1 + 1 + 1 + ... + 1 = n
 #+BEGIN_SRC octave
   r=7, s=7, n= 11
-  nthRoot = exp(i*2*pi./n)
-  fourierVectorR = nthRoot.^((0:(n-1))*r)
-  fourierVectorS = nthRoot.^((0:(n-1))*s)
-  fourierVectorR*fourierVectorS'
+  fourierSeries(n,r)*fourierSeries(n,s)'
 #+END_SRC
 
 #+RESULTS:
@@ -379,14 +382,18 @@ We've just shown that the fourier vectors are orthogonal as long as the /k/'s ar
 | 1 | ...       | ...       | ...   | .. |
 | 1 | \xi^{n-1} | \xi^{n-2} | ...   | .. |
 
-#+BEGIN_SRC octave
-  n= 7
-  nthRoot = exp(i*2*pi./n)
-  F=zeros(n,0)
-  for k = 0:(n-1)
-    F=horzcat(F,(nthRoot.^((0:(n-1))*k)).')
+#+BEGIN_SRC octave :results silent
+  function F = fourierMatrix(n)
+    F=zeros(n,0)
+    for k = 0:(n-1)
+      F=horzcat(F,fourierSeries(n,k).');
+    end
   end
-  ans = round(F.*1000)./1000
+#+END_SRC
+
+#+BEGIN_SRC octave
+  F = fourierMatrix(7);
+  round(F.*1000)./1000
 #+END_SRC
 
 #+RESULTS:
@@ -411,13 +418,8 @@ Looking at the real components of the columns - there is one constant component 
 
 If your input is over 1 second then this maps to a sampled cosine function of 1Hz, 2Hz, 3Hz, etc..\\
 #+BEGIN_SRC octave
-  n= 7
-  nthRoot = exp(i*2*pi./n)
-  F=zeros(n,0)
-  for k = 0:(n-1)
-    F=horzcat(F,(nthRoot.^((0:(n-1))*k)).')
-  end
-  ans = real(round(F.*1000)./1000)
+  realF = real(F);
+  round(realF.*1000)./1000
 #+END_SRC
 
 #+RESULTS:
@@ -430,6 +432,7 @@ If your input is over 1 second then this maps to a sampled cosine function of 1H
 | 1 | -0.223 | -0.901 |  0.623 |  0.623 | -0.901 | -0.223 |
 | 1 |  0.623 | -0.223 | -0.901 | -0.901 | -0.223 |  0.623 |
 #+END_SRC
+
 However you will notice that there is a symmetry around the middle axis and higher frequencies look identical to lower frequencies (and hence the real values don't form an orthogonal basis)
 - *\xi^{n-k}* = cos((n-k)(2\pi{}/n)+isin((n-k)(2\pi{}/n)=cos(2\pi+2\pi{}k/n)+isin(2\pi+2\pi{}k/n)
 b/c /sin(2\pi+x)=sin(x)/ we simplify
@@ -443,15 +446,9 @@ Since each series (irrespective of the /k/ exponent) has length /n^{1/2}/ (remem
  In *F^{-1}F* the diagonal elements will be the column magnitudes, which have been normalized to /1/, and the off diagonal elements will be inner products of orthogonal vectors and therefore /0/ - so the product will give us the identity matrix *I*
 
 #+BEGIN_SRC octave
-  n= 7
-  nthRoot = exp(i*2*pi./n)
-  F=zeros(n,0)
-  for k = 0:(n-1)
-    F=horzcat(F,(nthRoot.^((0:(n-1))*k)).')
-  end
-
-  F = F./sqrt(n) %Normalize the Fourier matrix
-  ans = real(round(F*F'.*1000)./1000)
+  normalizedF = F./sqrt(n) %Normalize the Fourier matrix
+  I = normalizedF*normalizedF'
+  real(round(I.*1000)./1000)
 #+END_SRC
 
 #+RESULTS:
@@ -474,23 +471,23 @@ If we can carefully pair Euler functions we get back bare sine/cosine functions 
  - [e^{i\theta} + e^{-i\theta}]/2 = [cos(\theta) + isin(\theta) + cos(-\theta) + isin(-\theta)]/2 = *cos(\theta)*
  - [e^{i\theta} - e^{-i\theta}]/2i = [cos(\theta) + isin(\theta) - cos(-\theta) - isin(-\theta)]/2i = *sin(\theta)*
 #+BEGIN_SRC octave
-samples=[0:0.3:(2*pi)]
+n=9
+samples=[0:(2*pi/n):(2*pi)]
 round(cos(samples).*100)./100
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |
+| 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 | 1 |
 #+END_SRC
 
 #+BEGIN_SRC octave
-samples=[0:0.3:(2*pi)]
 round((exp(i*samples)+exp(-i*samples))./2.*100)./100
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 0.96 | 0.83 | 0.62 | 0.36 | 0.07 | -0.23 | -0.5 | -0.74 | -0.9 | -0.99 | -0.99 | -0.9 | -0.73 | -0.49 | -0.21 | 0.09 | 0.38 | 0.63 | 0.83 | 0.96 |
+| 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 | 1 |
 #+END_SRC
 
 We can subsitute /\theta/ with /-2\pi{}\phi{}/n/ to get our more familiar Fourier series form:
@@ -509,20 +506,70 @@ With some rearranging we can rewrite these as:
 
 And these now will correspond to basis vectors in our fourier matrix.
 
-For instance if /\phi/ = 3 we can pick an /x/
+For instance if /\phi/ = 2 we can pick an /x/
 - x = [ 0 0 n/2 0 0 .. 0 0 n/2 0 0]_{1,n}
 So that:
-- cos(2\pi * 3) = F^{*}x^{T}
+- cos(2\pi * 2) = (1/n)F^{*}x^{T}
+#+BEGIN_SRC octave
+  real((fourierMatrix(n)'*[0 0 n/2 0 0 0 0 n/2 0].')./n).'
+#+END_SRC
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 | 0.17364817766693 | -0.9396926207859079 | -0.4999999999999988 | 0.7660444431189775 | 0.7660444431189768 | -0.5000000000000001 | -0.9396926207859061 | 0.1736481776669308 |
+#+END_SRC
+#+BEGIN_SRC octave
+  cos(2*samples)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 | 0.1736481776669304 | -0.9396926207859083 | -0.5000000000000004 | 0.7660444431189778 | 0.7660444431189781 | -0.4999999999999992 | -0.9396926207859086 | 0.1736481776669297 | 1 |
+#+END_SRC
 
 Similarly with the sine function, except with an extra minus sign:
 - y = [ 0 0 -n/2i 0 0 .. 0 0 n/2i 0 0]_{1,n}
 So that:
-- sin(2\pi * 3) = F^{*}y^{T}
+- sin(2\pi * 2) = (1/n)F^{*}y^{T}
+#+BEGIN_SRC octave
+  (real(fourierMatrix(n)'*[0 0 -n/2i 0 0 0 0 n/2i 0].'./n)')
+#+END_SRC
+#+RESULTS:
+#+BEGIN_SRC org
+| 0 | 0.984807753012207 | 0.3420201433256683 | -0.8660254037844376 | -0.6427876096865384 | 0.6427876096865385 | 0.8660254037844363 | -0.3420201433256689 | -0.9848077530122052 |
+#+END_SRC
+#+BEGIN_SRC octave
+  sin(2*samples)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 0 | 0.984807753012208 | 0.3420201433256689 | -0.8660254037844384 | -0.6427876096865396 | 0.6427876096865391 | 0.8660254037844392 | -0.342020143325668 | -0.9848077530122081 | -4.898587196589413e-16 |
+#+END_SRC
 
 ** How does a phase shift look in this basis?
-Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combinging the two, each complex coordinate in the fourier basis generates one of each
+Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combining the two, each complex coordinate in the fourier basis generates one of each and the result is purely real
 - v = \real(v) + \image(v)
-- vF^{*} = \real(v)F^{*} + \image(v)F^{*} = \alpha sin(...) + \beta cos(...)
+- F^{*}v/n = F^{*}\real(v)/n + F^{*}\image(v)/n = \alpha sin(...) + \beta cos(...)
+#+BEGIN_SRC octave :results silent
+v = [0 0 n/2 0 0 0 0 n/2 0] .+ [0 0 -n/2i 0 0 0 0 n/2i 0]
+#+END_SRC
+#+BEGIN_SRC octave
+  (real(fourierMatrix(n)'*v.')./n).'
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 | 1.158455930679137 | -0.5976724774602395 | -1.366025403784437 | 0.1232568334324391 | 1.408832052805515 | 0.3660254037844363 | -1.281712764111575 | -0.8111595753452744 |
+#+END_SRC
+#+BEGIN_SRC octave
+  cos(2*samples).+sin(2*samples)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 | 1.158455930679138 | -0.5976724774602394 | -1.366025403784439 | 0.1232568334324382 | 1.408832052805517 | 0.3660254037844399 | -1.281712764111577 | -0.8111595753452784 | 0.9999999999999996 |
+#+END_SRC
+
 Sinusoidals have an amazing property that if you add sinusoidals of the same frequency (but different amplitudes and/or phases) you always get back just one sinusoidal of that frequency.
 
 In our case we are simply adding the /sine/ and /cosine/ and the additive property comes out of the trig identity:
@@ -535,10 +582,20 @@ Working back we get the general rules for *harmonic addition*
 - \alpha sin(\omega{}t) + \beta cos(\omega{}t) = \gamma sin(\omega{}t+\theta)
 - \gamma = \radic[\alpha^{2}+\beta^{2}]
 - \theta = atan(\beta/\alpha)
+#+BEGIN_SRC octave
+gamma = sqrt(1^2+1^2) 
+theta = atan(1)
+gamma*sin(2*samples+theta)
+#+END_SRC
 
-So when the complex coordinate gives us a sine and cosine of the same frequency what it's really giving us is a phase shifted sinusoid. However the harmonix addition formula gives us a few crucial extra guarantees. Even if your input phase shifts (say there is a delayed in recording) while the real and imaginary coordiante components will fluctuate the norm/length will remain constant b/c  \radic[\alpha^{2}+\beta^{2}] will always be equal to true sine wave's amplitude \gamma.
+#+RESULTS:
+#+BEGIN_SRC org
+| 1 | 1.158455930679138 | -0.5976724774602394 | -1.366025403784439 | 0.1232568334324382 | 1.408832052805517 | 0.3660254037844412 | -1.281712764111577 | -0.8111595753452796 | 1 |
+#+END_SRC
 
-Numerically for a generic input signal *x* if we take the norm of *Fx* (or more simply just do *Fx(Fx)^{*}*) you will get the amplitude at each frequency component (at the expense of loosing all phase information) and we can then draw a spectrogram
+So when the complex coordinate gives us a sine and cosine of the same frequency what it's really giving us is a phase shifted sine wave. However the harmonic addition formula gives us a few crucial extra guarantees. Even if the input phase shifts (say there is a delayed in recording the input signal), while that would lead to a change in the real and imaginary coordinate components, the norm/length will remain constant b/c /\radic[\alpha^{2}+\beta^{2}]/ will always be equal to true sine wave's amplitude \gamma.
+
+Numerically for a generic input signal *x* if we take the norm^{2} with *Fx(Fx)^{\star}* we will know the amplitude at each frequency component (at the expense of loosing all phase information) and we can then draw a spectrogram
 
 This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2\pi\phi) will fluctuate with /\phi/ it's corresponding Euler basis vector /A\xi^{\phi}/ will have constant magnitude /A/ for all /\phi/ (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
 
