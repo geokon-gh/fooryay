@@ -109,9 +109,9 @@ v*conj(v)
 9
 #+END_SRC
 
-So instead of doing a transpose we need to introduce a new transposition called the Hermitian transpose
+When dealing with vectors of values we define the 2-norm (what we typically think of as the magnitude) as the inner product of a vector with itself. Given a vector /v/ we use matrix multiplication to take the matrix product /vv^{T}/ . In the real case this will give you a sum of the squares of the values (ie. a sum of the magnitudes of the coordinates). But as we just saw, squaring complex values doesn't give the desired behavior and doesn't give us a real valued answer. The fix is to conjugate each entry before we "turn" the vector.
  - [a+ib c+id]^{*} = [a-ib c-d]^{T}
-The Hermitian transpose is denoted with a star. It simply take a normal transpose and replaces the terms with their complex conjugates.
+We simply take a normal transpose and replaces the terms with their complex conjugates. This is called the Hermitian transpose
 #+BEGIN_SRC octave
 v = [3+4i 6+8i]
 v'
@@ -132,8 +132,11 @@ v*v'
 125
 #+END_SRC
 
- When the vector values are all real it will behave exactly like a transpose and when the values are complex, it will take their conjugates and give us scalar/real values of each complex values' magnitude
+Since the final value is a scalar we can carry out the Hermitian transpose on any 2 vectors we are doing an inner product on and the answer will remain the same:
+- a*b^{*} = (a*b^{*})^{*} = a^{*}b
+So either *a* or *b* can be conjugated. This is self evident because the innner product of /a/ and /b/ is the same as the inner product of /b/ and /a/.
 
+Most importantly, when the vector values are all real the Hermetian transpose will behave exactly like a "normal" transpose - so the Hermitian transpose effectively makes the standard transpose redundant in most cases.
 * The Unit Circle
 Notice that when the /norm-squared/ is equal to /1/ the magnitude is also equal to /1/. All these special points who's length is equal to /1/ lie on what's called the /unit cirle/. If we start with two complex numbers /a+ib/ and /c+id/ then
  - (a^2+b^2)^{1/2} = 1 /and therefore/ a^2+b^2 = 1
@@ -548,7 +551,7 @@ So that:
 
 ** How does a phase shift look in this basis?
 Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combining the two, each complex coordinate in the fourier basis generates one of each and the result is purely real
-- v = \real(v) + \image(v)
+- v = \real(v) + \image(v)  ....  (technically this is not a coordinate b/c it will have a mirror at n-k)
 - F^{*}v/n = F^{*}\real(v)/n + F^{*}\image(v)/n = \alpha sin(...) + \beta cos(...)
 #+BEGIN_SRC octave :results silent
 v = [0 0 n/2 0 0 0 0 n/2 0] .+ [0 0 -n/2i 0 0 0 0 n/2i 0]
@@ -569,7 +572,6 @@ v = [0 0 n/2 0 0 0 0 n/2 0] .+ [0 0 -n/2i 0 0 0 0 n/2i 0]
 #+BEGIN_SRC org
 | 1 | 1.158455930679138 | -0.5976724774602394 | -1.366025403784439 | 0.1232568334324382 | 1.408832052805517 | 0.3660254037844399 | -1.281712764111577 | -0.8111595753452784 | 0.9999999999999996 |
 #+END_SRC
-
 Sinusoidals have an amazing property that if you add sinusoidals of the same frequency (but different amplitudes and/or phases) you always get back just one sinusoidal of that frequency.
 
 In our case we are simply adding the /sine/ and /cosine/ and the additive property comes out of the trig identity:
@@ -599,10 +601,13 @@ Numerically for a generic input signal *x* if we take the norm^{2} with *Fx(Fx)^
 
 This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2\pi\phi) will fluctuate with /\phi/ it's corresponding Euler basis vector /A\xi^{\phi}/ will have constant magnitude /A/ for all /\phi/ (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
 
+#+BEGIN_QUOTE
+*Note*: While any actual coordinate in the Fourier basis can be broken up into a /real/ and /imaginary/ parts like we did, we can also write it out (like any complex number) in the form /Ae^{i\theta}/. The complex constant/coordinate written in this form is known as the *phasor*. When multiplied times the basis vector /e^[i\omegat}/ we see that the phasor fully specifies the phase and amplitude of the resulting sine wave in the real/time domain. Operations in the Fourier basis are in effect operations on these phasors.
+#+END_QUOTE
 ** Which frequencies are observable?
-When constructing our /sine/ and /cosine/ we noted in passing that /\xi^-\phi{} = \xi^{n-\phi{}}/ and we notice how each sigular frequency takes up two spots in the coordinate vector - one at /\phi/ and one at /n-\phi/. This is an artifact of our sampling. Regular samples at one frequency will look identical to samples at other frequencies. The problems (and potential advantages) of frequency replication and aliasing [[.aliasing.html][are discussed separately]].
+When constructing our /sine/ and /cosine/ we noted in passing that /\xi^-\phi{} = \xi^{n-\phi{}}/ and we notice how each sigular frequency takes up two spots in the coordinate vector - one at /\phi/ and one at /n-\phi/. This is an artifact of our sampling. Regular samples at one frequency will look identical to samples at other frequencies. The problems (and potential advantages) of frequency replication and aliasing [[.aliasing.org][are discussed separately]]
 
-In practical terms this means that you can't distinguish /\phi/ and /n-\phi/ frequencies, so you need to choose an /n/ large enough that all the frequencies lie between 0 and /n/2/. And in the final Fourier basis you can entirely disregard basis vectors from /n/2/ to /n/ b/c they will be the mirror of the /0/ to /n/2/ range
+In practical terms this means that you can't distinguish /\phi/ and /n-\phi/ frequencies, so if you want to use the Fourier basis to look at the spectrum on an input signal you need to ensure /n/ is large enough that all the input frequencies lie between 0 and /n/2/. Then in the final Fourier basis you can entirely disregard basis vectors from /n/2/ to /n/ b/c they will mirror the /0/ to /n/2/ range.
 #+BEGIN_QUOTE
 *Note* This doesn't represent a loss of information. The input had *n* real values the output has *n/2* complex coordinates (each made of 2 values).\\
 *Note* If the input is complex then this symmertry won't hold. But in most applications a complex input is not meaningful

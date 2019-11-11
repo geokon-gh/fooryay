@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>Discrete Fourier Transform</title>
-<!-- 2019-10-28 一 18:15 -->
+<!-- 2019-11-11 一 17:48 -->
 <meta  charset="utf-8">
 <meta  name="generator" content="Org-mode">
 <meta  name="author" content="George Kontsevich">
@@ -10,6 +10,48 @@
 >
 <link rel="stylesheet" type="text/css" href="../web/worg.css" />
 <link rel="shortcut icon" href="../web/panda.svg" type="image/x-icon">
+<script type="text/javascript" src="../MathJax/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
 </head>
 <body>
 <div id="content">
@@ -226,14 +268,14 @@ v<span style="color: #006FE0;">*</span>conj(v)
 </div>
 
 <p>
-So instead of doing a transpose we need to introduce a new transposition called the Hermitian transpose
+When dealing with vectors of values we define the 2-norm (what we typically think of as the magnitude) as the inner product of a vector with itself. Given a vector <i>v</i> we use matrix multiplication to take the matrix product <i>vv<sup>T</sup></i> . In the real case this will give you a sum of the squares of the values (ie. a sum of the magnitudes of the coordinates). But as we just saw, squaring complex values doesn't give the desired behavior and doesn't give us a real valued answer. The fix is to conjugate each entry before we "turn" the vector.
 </p>
 <ul class="org-ul">
 <li>[a+ib c+id]<sup>*</sup> = [a-ib c-d]<sup>T</sup>
 </li>
 </ul>
 <p>
-The Hermitian transpose is denoted with a star. It simply take a normal transpose and replaces the terms with their complex conjugates.
+We simply take a normal transpose and replaces the terms with their complex conjugates. This is called the Hermitian transpose
 </p>
 <div class="org-src-container">
 
@@ -262,11 +304,21 @@ v<span style="color: #006FE0;">'</span>
 </div>
 
 <p>
-When the vector values are all real it will behave exactly like a transpose and when the values are complex, it will take their conjugates and give us scalar/real values of each complex values' magnitude
+Since the final value is a scalar we can carry out the Hermitian transpose on any 2 vectors we are doing an inner product on and the answer will remain the same:
+</p>
+<ul class="org-ul">
+<li>a*b<sup>*</sup> = (a*b<sup>*</sup>)<sup>*</sup> = a<sup>*</sup>b
+</li>
+</ul>
+<p>
+So either <b>a</b> or <b>b</b> can be conjugated. This is self evident because the innner product of <i>a</i> and <i>b</i> is the same as the inner product of <i>b</i> and <i>a</i>.
+</p>
+
+<p>
+Most importantly, when the vector values are all real the Hermetian transpose will behave exactly like a "normal" transpose - so the Hermitian transpose effectively makes the standard transpose redundant in most cases.
 </p>
 </div>
 </div>
-
 <div id="outline-container-sec-4" class="outline-2">
 <h2 id="sec-4">The Unit Circle</h2>
 <div class="outline-text-2" id="text-4">
@@ -1130,7 +1182,7 @@ So that:
 Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combining the two, each complex coordinate in the fourier basis generates one of each and the result is purely real
 </p>
 <ul class="org-ul">
-<li>v = &real;(v) + &image;(v)
+<li>v = &real;(v) + &image;(v)  &#x2026;.  (technically this is not a coordinate b/c it will have a mirror at n-k)
 </li>
 <li>F<sup>*</sup>v/n = F<sup>*</sup>&real;(v)/n + F<sup>*</sup>&image;(v)/n = &alpha; sin(&#x2026;) + &beta; cos(&#x2026;)
 </li>
@@ -1162,7 +1214,6 @@ Notice how the cosines have real coordinates and the sines have imaginary coordi
 <pre class="src src-org"><span style="color: #006400; background-color: #EAFFEA;">| 1 | 1.158455930679138 | -0.5976724774602394 | -1.366025403784439 | 0.1232568334324382 | 1.408832052805517 | 0.3660254037844399 | -1.281712764111577 | -0.8111595753452784 | 0.9999999999999996 |</span>
 </pre>
 </div>
-
 <p>
 Sinusoidals have an amazing property that if you add sinusoidals of the same frequency (but different amplitudes and/or phases) you always get back just one sinusoidal of that frequency.
 </p>
@@ -1221,18 +1272,23 @@ Numerically for a generic input signal <b>x</b> if we take the norm<sup>2</sup> 
 <p>
 This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2&pi;&phi;) will fluctuate with <i>&phi;</i> it's corresponding Euler basis vector <i>A&xi;<sup>&phi;</sup></i> will have constant magnitude <i>A</i> for all <i>&phi;</i> (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
 </p>
-</div>
-</div>
 
+<blockquote>
+<p>
+<b>Note</b>: While any actual coordinate in the Fourier basis can be broken up into a <i>real</i> and <i>imaginary</i> parts like we did, we can also write it out (like any complex number) in the form <i>Ae<sup>i&theta;</sup></i>. The complex constant/coordinate written in this form is known as the <b>phasor</b>. When multiplied times the basis vector <i>e<sup>[i\omegat</sup>}</i> we see that the phasor fully specifies the phase and amplitude of the resulting sine wave in the real/time domain. Operations in the Fourier basis are in effect operations on these phasors.
+</p>
+</blockquote>
+</div>
+</div>
 <div id="outline-container-sec-10-3" class="outline-3">
 <h3 id="sec-10-3">Which frequencies are observable?</h3>
 <div class="outline-text-3" id="text-10-3">
 <p>
-When constructing our <i>sine</i> and <i>cosine</i> we noted in passing that <i>&xi;<sup>-&phi;</sup>{} = &xi;<sup>n-&phi;</sup></i> and we notice how each sigular frequency takes up two spots in the coordinate vector - one at <i>&phi;</i> and one at <i>n-&phi;</i>. This is an artifact of our sampling. Regular samples at one frequency will look identical to samples at other frequencies. The problems (and potential advantages) of frequency replication and aliasing <i>are discussed separately</i>.
+When constructing our <i>sine</i> and <i>cosine</i> we noted in passing that <i>&xi;<sup>-&phi;</sup>{} = &xi;<sup>n-&phi;</sup></i> and we notice how each sigular frequency takes up two spots in the coordinate vector - one at <i>&phi;</i> and one at <i>n-&phi;</i>. This is an artifact of our sampling. Regular samples at one frequency will look identical to samples at other frequencies. The problems (and potential advantages) of frequency replication and aliasing <i>are discussed separately</i>
 </p>
 
 <p>
-In practical terms this means that you can't distinguish <i>&phi;</i> and <i>n-&phi;</i> frequencies, so you need to choose an <i>n</i> large enough that all the frequencies lie between 0 and <i>n/2</i>. And in the final Fourier basis you can entirely disregard basis vectors from <i>n/2</i> to <i>n</i> b/c they will be the mirror of the <i>0</i> to <i>n/2</i> range
+In practical terms this means that you can't distinguish <i>&phi;</i> and <i>n-&phi;</i> frequencies, so if you want to use the Fourier basis to look at the spectrum on an input signal you need to ensure <i>n</i> is large enough that all the input frequencies lie between 0 and <i>n/2</i>. Then in the final Fourier basis you can entirely disregard basis vectors from <i>n/2</i> to <i>n</i> b/c they will mirror the <i>0</i> to <i>n/2</i> range.
 </p>
 <blockquote>
 <p>
