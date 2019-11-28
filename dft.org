@@ -4,9 +4,16 @@
 
 * Goal
 Using the multiplicative properties of complex numbers we construct an easily-invertible orthogonal basis in which periodic components of our input become apparant. This basis allows us to carry out a class of operations that are numerically intensive in the standard basis but much quicker in the frequency-basis.
-#+BEGIN_SRC octave
+#+BEGIN_SRC octave :results none
 inline code examples are in MATLAB/Octave
 #+END_SRC
+
+#+BEGIN_SRC octave :results silent
+  function res = quickRound(n)
+    res = round(1000*n)./1000
+  end
+#+END_SRC
+
 #+PROPERTY: session *Inferior Octave*
 #+PROPERTY: eval never-export
 #+PROPERTY: exports both
@@ -265,15 +272,14 @@ rootOfUnity(7)
 0.6234898018587336+0.7818314824680298i
 #+END_SRC
 
-#+BEGIN_SRC octave :results output
+#+BEGIN_SRC octave
 n = 7;
 rootOfUnity(n)^n
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-
-ans =          1 -      5E-16i
+1-4.996003610813204e-16i
 #+END_SRC
 
 * Fourier series
@@ -292,29 +298,29 @@ The Fourier series is a very special sum of the exponents of an n^{th} root of u
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 +          0i      |
-| -0.809 -      0.588i |
-| 0.309 +      0.951i  |
-| 0.309 -      0.951i  |
-| -0.809 +      0.588i |
-|                      |
+| 1.00000 + 0.00000i  |
+| -0.80902 - 0.58779i |
+| 0.30902 + 0.95106i  |
+| 0.30902 - 0.95106i  |
+| -0.80902 + 0.58779i |
+|                     |
 #+END_SRC
 Here the /k/ can be any integer value, but the sum will always maintain the property that if it's multiplied by /\xi^k/ we get the same sequence back. The last term goes to /\xi^{nk} = 1/ and the remaining terms in effect shift places giving us:
  -  \xi^k + \xi^{2k} + \xi^{3k} + ... + \xi^{(n-1)k} + 1
 #+BEGIN_SRC octave
   n=5,k=3
   ans=disp(
-          (fourierSeries(n,k).*(nthRoot^k)).')
+          (fourierSeries(n,k).*(rootOfUnity(n)^k)).')
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| -0.809 -      0.588i |
-| 0.309 +      0.951i  |
-| 0.309 -      0.951i  |
-| -0.809 +      0.588i |
-| 1 -   8.33E-16i      |
-|                      |
+| -0.80902 - 0.58779i |
+| 0.30902 + 0.95106i  |
+| 0.30902 - 0.95106i  |
+| -0.80902 + 0.58779i |
+| 1.00000 - 0.00000i  |
+|                     |
 #+END_SRC
 
 So we can write
@@ -475,13 +481,13 @@ If we can carefully pair Euler functions we get back bare sine/cosine functions 
  - [e^{i\theta} - e^{-i\theta}]/2i = [cos(\theta) + isin(\theta) - cos(-\theta) - isin(-\theta)]/2i = *sin(\theta)*
 #+BEGIN_SRC octave
 n=9
-samples=[0:(2*pi/n):(2*pi)]
+samples=[0:(2*pi/n):(2*pi-(2*pi/n))]
 round(cos(samples).*100)./100
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 | 1 |
+| 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 |
 #+END_SRC
 
 #+BEGIN_SRC octave
@@ -490,7 +496,7 @@ round((exp(i*samples)+exp(-i*samples))./2.*100)./100
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 | 1 |
+| 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 |
 #+END_SRC
 
 We can subsitute /\theta/ with /-2\pi{}\phi{}/n/ to get our more familiar Fourier series form:
@@ -514,19 +520,22 @@ For instance if /\phi/ = 2 we can pick an /x/
 So that:
 - cos(2\pi * 2) = (1/n)F^{*}x^{T}
 #+BEGIN_SRC octave
-  real((fourierMatrix(n)'*[0 0 n/2 0 0 0 0 n/2 0].')./n).'
+    quickRound(
+	real((fourierMatrix(n)'*[0 0 n/2 0 0 0 0 n/2 0].')./n).')
 #+END_SRC
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 0.17364817766693 | -0.9396926207859079 | -0.4999999999999988 | 0.7660444431189775 | 0.7660444431189768 | -0.5000000000000001 | -0.9396926207859061 | 0.1736481776669308 |
+| 1 | 0.174 | -0.94 | -0.5 | 0.766 | 0.766 | -0.5 | -0.94 | 0.174 |
 #+END_SRC
+
 #+BEGIN_SRC octave
-  cos(2*samples)
+quickRound(
+  cos(2*samples))
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 0.1736481776669304 | -0.9396926207859083 | -0.5000000000000004 | 0.7660444431189778 | 0.7660444431189781 | -0.4999999999999992 | -0.9396926207859086 | 0.1736481776669297 | 1 |
+| 1 | 0.174 | -0.94 | -0.5 | 0.766 | 0.766 | -0.5 | -0.94 | 0.174 |
 #+END_SRC
 
 Similarly with the sine function, except with an extra minus sign:
@@ -534,19 +543,38 @@ Similarly with the sine function, except with an extra minus sign:
 So that:
 - sin(2\pi * 2) = (1/n)F^{*}y^{T}
 #+BEGIN_SRC octave
-  (real(fourierMatrix(n)'*[0 0 -n/2i 0 0 0 0 n/2i 0].'./n)')
+quickRound(
+  (real(fourierMatrix(n)'*[0 0 -n/2i 0 0 0 0 n/2i 0].'./n)'))
 #+END_SRC
 #+RESULTS:
 #+BEGIN_SRC org
-| 0 | 0.984807753012207 | 0.3420201433256683 | -0.8660254037844376 | -0.6427876096865384 | 0.6427876096865385 | 0.8660254037844363 | -0.3420201433256689 | -0.9848077530122052 |
-#+END_SRC
-#+BEGIN_SRC octave
-  sin(2*samples)
+| 0 | 0.985 | 0.342 | -0.866 | -0.643 | 0.643 | 0.866 | -0.342 | -0.985 |
 #+END_SRC
 
+#+BEGIN_SRC octave
+quickRound(
+  sin(2*samples))
+#+END_SRC
 #+RESULTS:
 #+BEGIN_SRC org
-| 0 | 0.984807753012208 | 0.3420201433256689 | -0.8660254037844384 | -0.6427876096865396 | 0.6427876096865391 | 0.8660254037844392 | -0.342020143325668 | -0.9848077530122081 | -4.898587196589413e-16 |
+| 0 | 0.985 | 0.342 | -0.866 | -0.643 | 0.643 | 0.866 | -0.342 | -0.985 |
+#+END_SRC
+
+#+BEGIN_SRC octave
+  quickRound(
+      fourierMatrix(n)'*sin(2*samples)')
+#+END_SRC
+#+RESULTS:
+#+BEGIN_SRC org
+| 0+0i    |
+| 0+0i    |
+| 0-4.5i  |
+| -0+0i   |
+| -0+0i   |
+| -0+0i   |
+| -0+0i   |
+| -0+4.5i |
+| 0-0i    |
 #+END_SRC
 
 ** How does a phase shift look in this basis?
@@ -557,20 +585,24 @@ Notice how the cosines have real coordinates and the sines have imaginary coordi
 v = [0 0 n/2 0 0 0 0 n/2 0] .+ [0 0 -n/2i 0 0 0 0 n/2i 0]
 #+END_SRC
 #+BEGIN_SRC octave
-  (real(fourierMatrix(n)'*v.')./n).'
+quickRound(
+  (real(fourierMatrix(n)'*v.')./n).')
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 1.158455930679137 | -0.5976724774602395 | -1.366025403784437 | 0.1232568334324391 | 1.408832052805515 | 0.3660254037844363 | -1.281712764111575 | -0.8111595753452744 |
+| 1 | 1.158 | -0.598 | -1.366 | 0.123 | 1.409 | 0.366 | -1.282 | -0.811 |
 #+END_SRC
+
+
 #+BEGIN_SRC octave
-  cos(2*samples).+sin(2*samples)
+quickRound(
+  cos(2*samples).+sin(2*samples))
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 1.158455930679138 | -0.5976724774602394 | -1.366025403784439 | 0.1232568334324382 | 1.408832052805517 | 0.3660254037844399 | -1.281712764111577 | -0.8111595753452784 | 0.9999999999999996 |
+| 1 | 1.158 | -0.598 | -1.366 | 0.123 | 1.409 | 0.366 | -1.282 | -0.811 |
 #+END_SRC
 Sinusoidals have an amazing property that if you add sinusoidals of the same frequency (but different amplitudes and/or phases) you always get back just one sinusoidal of that frequency.
 
@@ -587,25 +619,66 @@ Working back we get the general rules for *harmonic addition*
 #+BEGIN_SRC octave
 gamma = sqrt(1^2+1^2) 
 theta = atan(1)
-gamma*sin(2*samples+theta)
+quickRound(
+gamma*sin(2*samples+theta))
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 1.158455930679138 | -0.5976724774602394 | -1.366025403784439 | 0.1232568334324382 | 1.408832052805517 | 0.3660254037844412 | -1.281712764111577 | -0.8111595753452796 | 1 |
+| 1 | 1.158 | -0.598 | -1.366 | 0.123 | 1.409 | 0.366 | -1.282 | -0.811 |
 #+END_SRC
 
 So when the complex coordinate gives us a sine and cosine of the same frequency what it's really giving us is a phase shifted sine wave. However the harmonic addition formula gives us a few crucial extra guarantees. Even if the input phase shifts (say there is a delayed in recording the input signal), while that would lead to a change in the real and imaginary coordinate components, the norm/length will remain constant b/c /\radic[\alpha^{2}+\beta^{2}]/ will always be equal to true sine wave's amplitude \gamma.
 
-Numerically for a generic input signal *x* if we take the norm^{2} with *Fx(Fx)^{\star}* we will know the amplitude at each frequency component (at the expense of loosing all phase information) and we can then draw a spectrogram
+Numerically for a generic input signal *x* if we take the norm^{2} of each coordinate we will know the amplitude at each frequency component (at the expense of loosing all phase information) and we can then draw a spectrogram
 
-This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2\pi\phi) will fluctuate with /\phi/ it's corresponding Euler basis vector /A\xi^{\phi}/ will have constant magnitude /A/ for all /\phi/ (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
+#+BEGIN_SRC octave
+v1 = fourierMatrix(n)'*sin(2*samples + 5.432)'
+quickRound( abs(v1)')
+#+END_SRC
+#+RESULTS:
+#+BEGIN_SRC org
+| 0 | 0 | 4.5 | 0 | 0 | 0 | 0 | 4.5 | 0 |
+#+END_SRC
+
+#+BEGIN_SRC octave
+v2 = fourierMatrix(n)'*sin(2*samples + 2.345)'
+quickRound( abs(v2)')
+#+END_SRC
+#+RESULTS:
+#+BEGIN_SRC org
+| 0 | 0 | 4.5 | 0 | 0 | 0 | 0 | 4.5 | 0 |
+#+END_SRC
+
+
+And we can also determine the input's phase shift (though this is typically less useful)
+#+BEGIN_SRC octave
+  v3 = fourierMatrix(n)'*sin(2*samples + pi)'
+  quickRound(
+      atan(imag(v3)./real(v3)))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+|      0 |
+|  0.067 |
+|  1.571 |
+|  0.369 |
+| -0.983 |
+|  0.219 |
+| -1.125 |
+| -1.571 |
+| -0.632 |
+#+END_SRC
+B/c of numerical/computational error you end up with phase shifts for all values - even ones where no signal is present
+
+This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of an equation like A*cos(2\pi\phi) changes with /\phi/, its corresponding Euler basis vector /A\xi^{\phi}/ will have constant magnitude /A/ for all /\phi/ (and we just ignore the symmetric mirrored basis vectors that were making the original fluctuate)
 
 #+BEGIN_QUOTE
 *Note*: While any actual coordinate in the Fourier basis can be broken up into a /real/ and /imaginary/ parts like we did, we can also write it out (like any complex number) in the form /Ae^{i\theta}/. The complex constant/coordinate written in this form is known as the *phasor*. When multiplied times the basis vector /e^[i\omegat}/ we see that the phasor fully specifies the phase and amplitude of the resulting sine wave in the real/time domain. Operations in the Fourier basis are in effect operations on these phasors.
 #+END_QUOTE
 ** Which frequencies are observable?
-When constructing our /sine/ and /cosine/ we noted in passing that /\xi^-\phi{} = \xi^{n-\phi{}}/ and we notice how each sigular frequency takes up two spots in the coordinate vector - one at /\phi/ and one at /n-\phi/. This is an artifact of our sampling. Regular samples at one frequency will look identical to samples at other frequencies. The problems (and potential advantages) of frequency replication and aliasing [[.aliasing.org][are discussed separately]]
+When constructing our /sine/ and /cosine/ we noted in passing that /\xi^-\phi{} = \xi^{n-\phi{}}/ and we notice how each sigular frequency takes up two spots in the coordinate vector - one at /\phi/ and one at /n-\phi/. This is an artifact of our sampling. Regular samples at one frequency will look identical to samples at other frequencies. The problems (and potential advantages) of frequency replication and aliasing [[./aliasing.org][are discussed separately]]
 
 In practical terms this means that you can't distinguish /\phi/ and /n-\phi/ frequencies, so if you want to use the Fourier basis to look at the spectrum on an input signal you need to ensure /n/ is large enough that all the input frequencies lie between 0 and /n/2/. Then in the final Fourier basis you can entirely disregard basis vectors from /n/2/ to /n/ b/c they will mirror the /0/ to /n/2/ range.
 #+BEGIN_QUOTE
@@ -616,3 +689,27 @@ In practical terms this means that you can't distinguish /\phi/ and /n-\phi/ fre
 
 All the previous math had assumed for simplicity that the input was at a frequency that matches one of the basis vectors - that it in effect produced one coordinate point. But how about if /\phi/ is not equal to a /k/ value?
 
+#+BEGIN_SRC octave
+v = fourierMatrix(n)'*sin(4.321*samples + 2.345)'
+quickRound( abs(v)')
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC org
+| 0.816 | 0.869 | 1.068 | 1.652 | 5.402 | 5.402 | 1.652 | 1.068 | 0.869 |
+#+END_SRC
+
+
+- [1 - e^{i(w_{x}-w_{k})NT}] / [1 - e^{i(w_{x}-w_{k})T}]
+- [1 - cos((w_{x}-w_{k})NT) + i sin((w_{x}-w_{k})NT) ] / [1 - cos((w_{x}-w_{k})T) + i sin((w_{x}-w_{k})T) ]
+
+
+- sin(θ) = [eiθ - e-iθ]/2i
+- sin((x-k)NT/2) = [e^{i(x-k)NT/2}- e^{-i(x-k)NT/2)}]/2i
+- sin((x-k)T/2) = [e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]/2i
+- sin((x-k)NT/2)/sin((x-k)T/2)
+ + = [e^{i(x-k)NT/2}- e^{-i(x-k)NT/2)}]/[e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]
+- e^{i(x-k)(N-1)T/2} * sin((x-k)NT/2)/sin((x-k)T/2)
+ + = e^{i(x-k)(N-1)T/2} * [e^{i(x-k)NT/2}- e^{-i(x-k)NT/2)}]/[e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]
+ + = [e^{i(x-k)NT/2+i(x-k)(N-1)T/2}- e^{-i(x-k)NT/2)+i(x-k)(N-1)T/2}]/[e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]
+ + = [e^{i(x-k)T/2*(N+(N-1))}- e^{-i(x-k)T/2*(N+(N-1))}]/[e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]
