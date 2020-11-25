@@ -3,12 +3,16 @@
 #+INCLUDE: "../web/config.org"
 
 * Goal
-Using the multiplicative properties of complex numbers we construct an easily-invertible orthogonal basis in which periodic components of our input become apparant. This basis allows us to carry out a class of operations that are numerically intensive in the standard basis but much quicker in the frequency-basis.
-#+BEGIN_SRC octave :results none
+- The goal is to build a new orthonormal basis. Orthonormality means that points in this basis aren't stretched or scaled and it allows the basis to be easily invertible. 
+
+- We leverage multiplicative properties of complex numbers to construct this basis. It will make periodic components of our input apparant and can allow us to reason about frequencies and phases of signal components. 
+
+- The new basis allows us to carry out a class of operations that are numerically intensive in the standard basis but much quicker in the frequency-basis.
+#+BEGIN_SRC octave :results none :exports none
 inline code examples are in MATLAB/Octave
 #+END_SRC
 
-#+BEGIN_SRC octave :results silent
+#+BEGIN_SRC octave :results silent  :exports none
   function res = quickRound(n)
     res = round(1000*n)./1000
   end
@@ -19,12 +23,30 @@ inline code examples are in MATLAB/Octave
 #+PROPERTY: exports both
 #+PROPERTY: results org
 
-* Complex numbers
-Complex numbers are of the form *a+ib* where *i= \radic(-1)* and *a* and *b* are known as the real and imaginary components of the complex number. The pair (a,b) are often referred to as a point on the complex plane. However the implicit analogy to 2D coordinates is a bit probematic
+#+BEGIN_SRC octave :results silent :exports none
+  graphics_toolkit qt
+  figure( 1, "visible", "on" );
+#+END_SRC
 
-To envision a complex plane we treat the /real/ component *a* acting as the /x/ and the /imaginary/ component *b* actving as the /y/.
-Like 2D coordinates, we can add/translate them and they can be scaled
- - (a+ib) + (c+id) = (a+c) + i(bd)
+* Complex numbers
+Complex numbers are of the form 
+#+BEGIN_QUOTE
+a+ib
+#+END_QUOTE
+where *i= \radic(-1)*\\
+*a* = real part
+*b* = imaginary part. 
+
+** The complex plane
+The pair *(a,b)* are often referred to as a point on the complex plane. 
+
+To draw this /complex plane/ we treat *a*/*real* as the /x/ coordinate and *b*/*imaginary* as the /y/ coordinate.
+
+- 1. Like 2D coordinates, we can add/translate them
+#+BEGIN_QUOTE
+(a+ib) + (c+id) = (a+c) + i(b+d)
+#+END_QUOTE 
+
 #+BEGIN_SRC octave
 1+5i + 3+2j
 #+END_SRC
@@ -33,8 +55,11 @@ Like 2D coordinates, we can add/translate them and they can be scaled
 #+BEGIN_SRC org
 4+7i
 #+END_SRC
+- 2. And Scale them
+#+BEGIN_QUOTE
+c \times{} (a+ib) = ca +icb 
+#+END_QUOTE
 
- - c * (a+ib) = ca +icb 
 #+BEGIN_SRC octave
 10 * (1+5i)
 #+END_SRC
@@ -44,8 +69,11 @@ Like 2D coordinates, we can add/translate them and they can be scaled
 10+50i
 #+END_SRC
 
-However unlike 2D [x,y] coordinates, complex numbers can be multiplied:
- - (a+ib) * (c+id) = (ac-bd) + i(ad+bc)
+- 3. However *!UNLIKE!* 2D [x,y] coordinates, complex numbers can be multiplied:
+#+BEGIN_QUOTE
+(a+ib) \times{} (c+id) = (ac-bd) + i(ad+bc)
+#+END_QUOTE
+
 #+BEGIN_SRC octave
 (1+2i) * (3+4j)
 #+END_SRC
@@ -55,7 +83,9 @@ However unlike 2D [x,y] coordinates, complex numbers can be multiplied:
 -5+10i
 #+END_SRC
 
-Normally if we are given 2 coordinates [x_{0},y_{0}] and [x_{1},y_{1}] we never ask ourselves to multiple them because multiplication between two points is simply no a defined operation. However in the complex-number case this operation comes naturally and it generates a new complex number
+*Notice* that if we are given 2 coordinates *[x_{0},y_{0}]* and *[x_{1},y_{1}]* we never ask ourselves to multiple them because multiplication between two points is simply no a defined operation. Just like how you don't ever multiple two points on a map. 
+
+However in the complex-number case this operation comes naturally and it generates a new complex number!
 
 #+BEGIN_QUOTE
 Note: You can do a dot and cross product between two [x,y] coordinates but:
@@ -63,11 +93,13 @@ Note: You can do a dot and cross product between two [x,y] coordinates but:
  - [x_{0},y_{0}] \times [x_{1},y_{1}] \to /requires an extra =z= dimension/
 #+END_QUOTE
  
-So points in the complex plane have this extra "feature" so it's important to not stretch the 2D coordinate interpretation too far. As far as I can tell there is no easy way to visualize what the result of a multiplication looks like in the general case.
+So it's important to stress that points in the complex plane have this extra "feature" so you can't stretch the 2D coordinate interpretation too far. While adding two complex numbers can be visualized by putting the two vectors end-to-end - there is no equivalent visualization for a product in the general case (as far as I can tell). You can try multiplying arbitrary vectors and see that the result seems to point in a new direction.
 
-* Complex Conjugates
-Just like points and vectors, complex numbers have a "length" or magnitude
- - ||a+ib|| = \radic(a^{2}+b^{2}}
+* Complex number lengths
+Just like real number, points and vectors, complex numbers have a "length" or magnitude
+#+BEGIN_QUOTE
+\vert{}a+ib\vert{} = \radic(a^{2}+b^{2}}
+#+END_QUOTE
 #+BEGIN_SRC octave
 abs(3+4i)
 #+END_SRC
@@ -77,13 +109,16 @@ abs(3+4i)
 5
 #+END_SRC
 
-And just like for points and vectors, this norm is a real scalar value
+And just a real number (and later vectors) this norm is a real scalar value \\
 
-The square of the norm is ofcourse just /a^{2}+b^{2}/ and this often comes up in things like the inner product.  For instance given a vector [x y] we can take its inner product with itself [x y][x y]^{T} to get its norm-squared. In the trivial =1x1= case this will be [z][z]^{T} which is z^{2}.
+One easy way to avoid absolute values when getting the magnitude of a real value is to square the value *a^{2}=|a|^{2}* 
 
-In the complex case where /z/ is a complex number /a+ib/ then we'd get /z*z^{T}=z^{2}=(a+ib)^{2}=a^{2}+i2ab-b^{2}/ which is non-real and doesn't match our magnitude-squared. So using the transpose no longer works. But this norm-squared is still easy to express as a product
- - a^{2}+b^{2} = (a+ib)(a-ib)
-With /a-ib/ known as the /complex conjugate/ of /a+ib/
+** The Complex Conjugate
+Notice that in the complex case the square of the magnitude can be calculated directly with:
+#+BEGIN_QUOTE
+a^{2}+b^{2} = (a+ib)(a-ib)
+#+END_QUOTE
+The *a-ib* is known as the *complex conjugate* of *a+ib*
 #+BEGIN_SRC octave
 conj(3+4j)
 #+END_SRC
@@ -103,9 +138,10 @@ v*conj(v)
 25
 #+END_SRC
 
-And what's convenient is that this actually still works for real values. Since a real value /a/ can be written as the complex number a+i*0 we can write its complex conjugate as a-i*0 and see that it's norm is
- - a^2+0^2 = (a+i0)(a-i0) = a^2
-Which is just the absolute value of /a/ squared
+What's convenient about this way of getting the square of the magnitude is that is keeps working for real values. Since a real value *a* can be written as the complex number *a+i0* we can write its complex conjugate as *a-i0* and see that its norm is
+#+BEGIN_QUOTE
+a^2+0^2 = (a+i0)(a-i0) = a^2
+#+END_QUOTE
 #+BEGIN_SRC octave
 v = 3
 v*conj(v)
@@ -115,10 +151,25 @@ v*conj(v)
 #+BEGIN_SRC org
 9
 #+END_SRC
+** Hermitian Transpose
+To get lengths of 2D,3D,etc. points we use the inner product. It's like Pythagoras' Theorem except you leave the end result squared..
+#+BEGIN_QUOTE
+v \middot{} v^{T}\\
+= [a b c d] \middot{} [a b c d]^{T}\\
+= a^{2} + b^{2} + c^{2} + d^{2}
+#+END_QUOTE
+If we try to carry out the same operation using complex values for the vector elements, even in the *1x1* case we'd get a weird value
+#+BEGIN_QUOTE
+z*z^{T}=z^{2}=(a+ib)^{2}=a^{2}+i2ab-b^{2}
+#+END_QUOTE
+this is a non-real value and doesn't match our understanding of length. So using the transpose to do an inner product with complex values doesn't give you a magnitude as before. 
 
-When dealing with vectors of values we define the 2-norm (what we typically think of as the magnitude) as the inner product of a vector with itself. Given a vector /v/ we use matrix multiplication to take the matrix product /vv^{T}/ . In the real case this will give you a sum of the squares of the values (ie. a sum of the magnitudes of the coordinates). But as we just saw, squaring complex values doesn't give the desired behavior and doesn't give us a real valued answer. The fix is to conjugate each entry before we "turn" the vector.
- - [a+ib c+id]^{*} = [a-ib c-d]^{T}
-We simply take a normal transpose and replaces the terms with their complex conjugates. This is called the Hermitian transpose
+But using complex conjugates in the transpose (a Hermitian transpose)  "fixes" the inner product
+#+BEGIN_QUOTE
+[a+ib c+id]^{*} = [a-ib c-d]^{T}
+
+[a+ib c+id][a+ib c+id]^{*} = [(a^{2}+b^{2})   (c^{2}+d^{2})]^{T}
+#+END_QUOTE
 #+BEGIN_SRC octave
 v = [3+4i 6+8i]
 v'
@@ -139,23 +190,36 @@ v*v'
 125
 #+END_SRC
 
-Since the final value is a scalar we can carry out the Hermitian transpose on any 2 vectors we are doing an inner product on and the answer will remain the same:
-- a*b^{*} = (a*b^{*})^{*} = a^{*}b
-So either *a* or *b* can be conjugated. This is self evident because the innner product of /a/ and /b/ is the same as the inner product of /b/ and /a/.
+Since the final value is /always/ scalar/real:
+#+BEGIN_QUOTE
+ab^{*} = (ab^{*})^{*} = a^{*}b
+#+END_QUOTE
+- 
+This means that either *a* or *b* can be conjugated when you want to do an inner product of two complex values
 
-Most importantly, when the vector values are all real the Hermetian transpose will behave exactly like a "normal" transpose - so the Hermitian transpose effectively makes the standard transpose redundant in most cases.
+And again, when the vector values are all /real/ the Hermetian transpose will behave exactly like a "normal" transpose - so the Hermitian transpose makes the standard transpose redundant
+
 * The Unit Circle
-Notice that when the /norm-squared/ is equal to /1/ the magnitude is also equal to /1/. All these special points who's length is equal to /1/ lie on what's called the /unit cirle/. If we start with two complex numbers /a+ib/ and /c+id/ then
- - (a^2+b^2)^{1/2} = 1 /and therefore/ a^2+b^2 = 1
- - (c^2+d^2)^{1/2} = 1 /and therefore/ c^2+d^2 = 1
-As we saw, their product is the point /(ac-bd) + i(ad+bc)/ and its length is also equal to 1. Proof:
- - [ (ac-bd)^{2} + (ad+bc)^{2} ]^(1/2)
- - [ a^{2}c^{2}-2acbd+b^{2}d^{2}+a^{2}d^{2}+2adbc+b^{2}c^{2} ]^{1/2}
- - [ a^{2}c^{2}+b^{2}b^{2}+a^{2}d^{d}+b^{2}c^{2} ]^{1/2}
- - [ c^2(a^2+b^2) + d^2(a^2+b^2) ]^(1/2)
-Through some subsitution we see that the length of the product is also equal to /1/
+Note the obvious statement that that when a number or vector is of length one then the square of its magnitude is also equal to *1*. All these special points of length *1* lie on what's called the /unit cirle/. 
 
-This tells us that while the general complex product is hard to think about, we know that least the product of any two points on the unit circle gives us a new point on the unit circle
+If we start with two complex numbers *a+ib* and *c+id* on the unit circle we can write
+#+BEGIN_QUOTE
+(a^2+b^2)^{\frac12} = 1\\
+a^2+b^2 = 1\\
+(c^2+d^2)^{\frac12} = 1\\
+c^2+d^2 = 1
+#+END_QUOTE
+As we saw, their product is the point *(ac-bd) + i(ad+bc)*.\\
+When we calculate the length of the product it also turns out to be *1*:
+#+BEGIN_QUOTE
+[ (ac-bd)^{2} + (ad+bc)^{2} ]^{\frac12}\\
+[ a^{2}c^{2} - 2acbd + b^{2}d^{2} + a^{2}d^{2} + 2adbc + b^{2}c^{2} ]^{\frac12}\\
+[ a^{2}c^{2} + b^{2}b^{2} + a^{2}d^{d} + b^{2}c^{2} ]^{\frac12}\\
+[ c^2(a^2 + b^2) + d^2(a^2 + b^2) ]^(\frac12)
+#+END_QUOTE
+(last step is subsituting the previous equalities in to see it's equal to *1*)
+
+This tells us that while in the general case the complex product is hard to visualize, we know that at least the product of any two points on the unit circle gives us a new point on the unit circle. 
 #+BEGIN_SRC octave
 v = sqrt(0.2)+sqrt(0.8)*i
 w = sqrt(0.69)+sqrt(0.31)*i
@@ -167,25 +231,36 @@ abs(v*w)
 0.9999999999999999
 #+END_SRC
 
+This is often described as a /rotation/ of the point on the /unit circle/
 * Euler's Formula
-To make the multiplicative rotations more natural we would like to start describing the points in terms of polar coordinates. The initial conversion is straightforward:
-- radius = r = (a^2+b^2)^{1/2}
-- angle = \theta = atan(b/a)
+To make the multiplicative rotations more natural we would like to start describing the points in terms of polar coordinates. The general conversion to polar coordinates is straightforward:
+#+BEGIN_QUOTE
+radius = r = (a^2+b^2)^{1/2}\\
+angle = \theta = atan(b/a)
+#+END_QUOTE
 Going back is also easy
-- a = r\cos(\theta)
-- b = r\sin(\theta)
-So the complex number /z=a+ib/ can now be defined in terms of /r/ and /theta/ and we can rewrite /a+ib/ as:
-- z = r\cos(\theta) + ir\sin(\theta)
-
-A more compact representation of this is given by *Euler's formula*:
- - re^{i\theta}=r\cos(\theta)+ir\sin(\theta)
+#+BEGIN_QUOTE
+a = r\cos(\theta)\\
+b = r\sin(\theta)
+#+END_QUOTE
+So any complex number *z=a+ib*, through substitution, can be rewritten into a mathematically equivalent form using *r* and *\theta{}*:
+#+BEGIN_QUOTE
+z = r\cos(\theta) + ir\sin(\theta)
+#+END_QUOTE
+However a more compact representation of this is given by *Euler's formula*:
+#+BEGIN_QUOTE
+re^{i\theta}=r\cos(\theta)+ir\sin(\theta)
+#+END_QUOTE
 A complete proof of this identity is a bit long, but the steps are:
-- Show that the derivative of e^x is e^x (it's the only equation of the form a^x that have this "stable" property)
-- Using the chain rule we see that the /n^{th}/ derivative of e^{ix} will be equal to i^{n}e^{ix}
-- i^{n} is a cyclic function with half its terms imaginary and half real
-- We then describe e^{i\theta} around /0/ in terms of the Taylor/Maclaurin Series
-- Half the terms of the Taylor/Maclaurin Series will be imaginary and half real. 
- - The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function
+1. Show that the derivative of *e^x* is *e^x* (it's the only equation of the form *a^x* that have this "stable" property)
+2. Using the chain rule we see that the *n^{th}* derivative of *e^{ix}* will be equal to *i^{n}e^{ix}*
+3. *i^{n}* is a cyclic function with half its terms imaginary and half real
+4. We then describe *e^{i\theta}* around *0* in terms of the /Taylor/Maclaurin Series/
+5. Half the terms of the Taylor/Maclaurin Series will be imaginary and half real. 
+6. The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function
+While the proof isn't very satisfying since there is no real way to visualize an imaginary power
+
+TODO: Add explanation of imaginary exponent...
 #+BEGIN_SRC octave
 123*exp(i*0.321)
 #+END_SRC
@@ -205,12 +280,17 @@ A complete proof of this identity is a bit long, but the steps are:
 #+END_SRC
 
 Using the trigonometric properties (which are self evident if you think of the graph and even/odd functions)
- - sin(-\theta)=-sin(\theta)
- - cos(-\theta)= cos(\theta)
+#+BEGIN_QUOTE
+sin(-\theta)=-sin(\theta)\\
+cos(-\theta)= cos(\theta)
+#+END_QUOTE
 We can rewrite the complex conjugate as
- - a - ib
- - r \cos(\theta) - /i/ r \sin(\theta)
- - r \cos(-\theta) + /i/ r \sin{-\theta) = *re^{-\theta}*
+#+BEGIN_QUOTE
+ a - ib\\
+ r \cos(\theta) - /i/ r \sin(\theta)\\
+ r \cos(-\theta) + /i/ r \sin{-\theta) = *re^{-\theta}*
+#+END_QUOTE
+
 #+BEGIN_SRC octave
 123*exp(-i*0.321)
 #+END_SRC
@@ -462,13 +542,13 @@ Since each series (irrespective of the /k/ exponent) has length /n^{1/2}/ (remem
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 1 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| 0 | 0 | 0 | 1 | 0 | 0 | 0 |
-| 0 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 0 | 0 | 0 | 0 | 0 | 1 | 0 |
-| 0 | 0 | 0 | 0 | 0 | 0 | 1 |
+| 0.636 |     0 |     0 |     0 |     0 |     0 |     0 |
+|     0 | 0.636 |     0 |     0 |     0 |     0 |     0 |
+|     0 |     0 | 0.636 |     0 |     0 |     0 |     0 |
+|     0 |     0 |     0 | 0.636 |     0 |     0 |     0 |
+|     0 |     0 |     0 |     0 | 0.636 |     0 |     0 |
+|     0 |     0 |     0 |     0 |     0 | 0.636 |     0 |
+|     0 |     0 |     0 |     0 |     0 |     0 | 0.636 |
 #+END_SRC
 
 * Frequency Space?
@@ -713,3 +793,15 @@ quickRound( abs(v)')
  + = e^{i(x-k)(N-1)T/2} * [e^{i(x-k)NT/2}- e^{-i(x-k)NT/2)}]/[e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]
  + = [e^{i(x-k)NT/2+i(x-k)(N-1)T/2}- e^{-i(x-k)NT/2)+i(x-k)(N-1)T/2}]/[e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]
  + = [e^{i(x-k)T/2*(N+(N-1))}- e^{-i(x-k)T/2*(N+(N-1))}]/[e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]
+
+
+
+
+
+
+
+# End - Octave plotting stuff shutdown
+# I forget why i needed this..
+#+BEGIN_SRC octave :results silent :exports none
+figure( 1, "visible", "off" );
+#+END_SRC

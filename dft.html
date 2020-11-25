@@ -40,61 +40,87 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgbef2fb3">Goal</a></li>
-<li><a href="#org8f5bd53">Complex numbers</a></li>
-<li><a href="#orgfe8e5cf">Complex Conjugates</a></li>
-<li><a href="#org9eac8b0">The Unit Circle</a></li>
-<li><a href="#org2bf0342">Euler's Formula</a></li>
-<li><a href="#org96683f6">The roots of unity</a></li>
-<li><a href="#org6390382">Fourier series</a></li>
-<li><a href="#orga3d9c96">Fourier Vectors</a></li>
-<li><a href="#orgc69c7d6">Fourier Matrix</a></li>
-<li><a href="#org72642ee">Frequency Space?</a>
+<li><a href="#orgf045120">Goal</a></li>
+<li><a href="#org0201963">Complex numbers</a>
 <ul>
-<li><a href="#org4c86427">How does a sinusoidal look in this basis?</a></li>
-<li><a href="#org2fcaf32">How does a phase shift look in this basis?</a></li>
-<li><a href="#org406a214">Which frequencies are observable?</a></li>
-<li><a href="#orgad47f34">How does a frequency who's period isn't a whole fraction of the sample rate come out in this basis?</a></li>
+<li><a href="#orgf785ed6">The complex plane</a></li>
+</ul>
+</li>
+<li><a href="#orgcd70fd8">Complex number lengths</a>
+<ul>
+<li><a href="#orgd941e89">The Complex Conjugate</a></li>
+<li><a href="#org932ffdb">Hermitian Transpose</a></li>
+</ul>
+</li>
+<li><a href="#org9239766">The Unit Circle</a></li>
+<li><a href="#orga33d721">Euler's Formula</a></li>
+<li><a href="#org842778c">The roots of unity</a></li>
+<li><a href="#org8baa7a1">Fourier series</a></li>
+<li><a href="#org340e522">Fourier Vectors</a></li>
+<li><a href="#org3d6c22a">Fourier Matrix</a></li>
+<li><a href="#orgf23c05e">Frequency Space?</a>
+<ul>
+<li><a href="#org0ad736f">How does a sinusoidal look in this basis?</a></li>
+<li><a href="#org7626577">How does a phase shift look in this basis?</a></li>
+<li><a href="#org75b6ca0">Which frequencies are observable?</a></li>
+<li><a href="#org4496499">How does a frequency who's period isn't a whole fraction of the sample rate come out in this basis?</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgbef2fb3" class="outline-2">
-<h2 id="orgbef2fb3">Goal</h2>
-<div class="outline-text-2" id="text-orgbef2fb3">
-<p>
-Using the multiplicative properties of complex numbers we construct an easily-invertible orthogonal basis in which periodic components of our input become apparant. This basis allows us to carry out a class of operations that are numerically intensive in the standard basis but much quicker in the frequency-basis.
-</p>
-<div class="org-src-container">
-<pre class="src src-octave">inline code examples are in MATLAB<span style="color: #483d8b;">/</span>Octave
-</pre>
-</div>
-
-<div class="org-src-container">
-<pre class="src src-octave"><span style="color: #a020f0;">function</span> res <span style="color: #483d8b;">=</span> <span style="color: #0000ff;">quickRound</span>(n)
-  res <span style="color: #483d8b;">=</span> round(1000<span style="color: #483d8b;">*</span>n)<span style="color: #483d8b;">./</span>1000
-<span style="color: #a020f0;">end</span>
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-org8f5bd53" class="outline-2">
-<h2 id="org8f5bd53">Complex numbers</h2>
-<div class="outline-text-2" id="text-org8f5bd53">
-<p>
-Complex numbers are of the form <b>a+ib</b> where <b>i= &radic;(-1)</b> and <b>a</b> and <b>b</b> are known as the real and imaginary components of the complex number. The pair (a,b) are often referred to as a point on the complex plane. However the implicit analogy to 2D coordinates is a bit probematic
-</p>
-
-<p>
-To envision a complex plane we treat the <i>real</i> component <b>a</b> acting as the <i>x</i> and the <i>imaginary</i> component <b>b</b> actving as the <i>y</i>.
-Like 2D coordinates, we can add/translate them and they can be scaled
-</p>
+<div id="outline-container-orgf045120" class="outline-2">
+<h2 id="orgf045120">Goal</h2>
+<div class="outline-text-2" id="text-orgf045120">
 <ul class="org-ul">
-<li>(a+ib) + (c+id) = (a+c) + i(bd)</li>
+<li>The goal is to build a new orthonormal basis. Orthonormality means that points in this basis aren't stretched or scaled and it allows the basis to be easily invertible.</li>
+
+<li>We leverage multiplicative properties of complex numbers to construct this basis. It will make periodic components of our input apparant and can allow us to reason about frequencies and phases of signal components.</li>
+
+<li>The new basis allows us to carry out a class of operations that are numerically intensive in the standard basis but much quicker in the frequency-basis.</li>
 </ul>
+</div>
+</div>
+
+<div id="outline-container-org0201963" class="outline-2">
+<h2 id="org0201963">Complex numbers</h2>
+<div class="outline-text-2" id="text-org0201963">
+<p>
+Complex numbers are of the form 
+</p>
+<blockquote>
+<p>
+a+ib
+</p>
+</blockquote>
+<p>
+where <b>i= &radic;(-1)</b><br>
+<b>a</b> = real part
+<b>b</b> = imaginary part. 
+</p>
+</div>
+
+<div id="outline-container-orgf785ed6" class="outline-3">
+<h3 id="orgf785ed6">The complex plane</h3>
+<div class="outline-text-3" id="text-orgf785ed6">
+<p>
+The pair <b>(a,b)</b> are often referred to as a point on the complex plane. 
+</p>
+
+<p>
+To draw this <i>complex plane</i> we treat <b>a*/*real</b> as the <i>x</i> coordinate and <b>b*/*imaginary</b> as the <i>y</i> coordinate.
+</p>
+
+<ul class="org-ul">
+<li>1. Like 2D coordinates, we can add/translate them</li>
+</ul>
+<blockquote>
+<p>
+(a+ib) + (c+id) = (a+c) + i(b+d)
+</p>
+</blockquote>
+
 <div class="org-src-container">
 <pre class="src src-octave">1<span style="color: #483d8b;">+</span>5i <span style="color: #483d8b;">+</span> 3<span style="color: #483d8b;">+</span>2j
 </pre>
@@ -104,10 +130,15 @@ Like 2D coordinates, we can add/translate them and they can be scaled
 <pre class="src src-org">4+7i
 </pre>
 </div>
-
 <ul class="org-ul">
-<li>c * (a+ib) = ca +icb</li>
+<li>2. And Scale them</li>
 </ul>
+<blockquote>
+<p>
+c &times; (a+ib) = ca +icb 
+</p>
+</blockquote>
+
 <div class="org-src-container">
 <pre class="src src-octave">10 <span style="color: #483d8b;">*</span> (1<span style="color: #483d8b;">+</span>5i)
 </pre>
@@ -118,12 +149,15 @@ Like 2D coordinates, we can add/translate them and they can be scaled
 </pre>
 </div>
 
-<p>
-However unlike 2D [x,y] coordinates, complex numbers can be multiplied:
-</p>
 <ul class="org-ul">
-<li>(a+ib) * (c+id) = (ac-bd) + i(ad+bc)</li>
+<li>3. However <b>!UNLIKE!</b> 2D [x,y] coordinates, complex numbers can be multiplied:</li>
 </ul>
+<blockquote>
+<p>
+(a+ib) &times; (c+id) = (ac-bd) + i(ad+bc)
+</p>
+</blockquote>
+
 <div class="org-src-container">
 <pre class="src src-octave">(1<span style="color: #483d8b;">+</span>2i) <span style="color: #483d8b;">*</span> (3<span style="color: #483d8b;">+</span>4j)
 </pre>
@@ -135,7 +169,11 @@ However unlike 2D [x,y] coordinates, complex numbers can be multiplied:
 </div>
 
 <p>
-Normally if we are given 2 coordinates [x<sub>0</sub>,y<sub>0</sub>] and [x<sub>1</sub>,y<sub>1</sub>] we never ask ourselves to multiple them because multiplication between two points is simply no a defined operation. However in the complex-number case this operation comes naturally and it generates a new complex number
+<b>Notice</b> that if we are given 2 coordinates <b>[x<sub>0</sub>,y<sub>0</sub>]</b> and <b>[x<sub>1</sub>,y<sub>1</sub>]</b> we never ask ourselves to multiple them because multiplication between two points is simply no a defined operation. Just like how you don't ever multiple two points on a map. 
+</p>
+
+<p>
+However in the complex-number case this operation comes naturally and it generates a new complex number!
 </p>
 
 <blockquote>
@@ -149,20 +187,23 @@ Note: You can do a dot and cross product between two [x,y] coordinates but:
 </blockquote>
 
 <p>
-So points in the complex plane have this extra "feature" so it's important to not stretch the 2D coordinate interpretation too far. As far as I can tell there is no easy way to visualize what the result of a multiplication looks like in the general case.
+So it's important to stress that points in the complex plane have this extra "feature" so you can't stretch the 2D coordinate interpretation too far. While adding two complex numbers can be visualized by putting the two vectors end-to-end - there is no equivalent visualization for a product in the general case (as far as I can tell). You can try multiplying arbitrary vectors and see that the result seems to point in a new direction.
 </p>
+</div>
 </div>
 </div>
 
-<div id="outline-container-orgfe8e5cf" class="outline-2">
-<h2 id="orgfe8e5cf">Complex Conjugates</h2>
-<div class="outline-text-2" id="text-orgfe8e5cf">
+<div id="outline-container-orgcd70fd8" class="outline-2">
+<h2 id="orgcd70fd8">Complex number lengths</h2>
+<div class="outline-text-2" id="text-orgcd70fd8">
 <p>
-Just like points and vectors, complex numbers have a "length" or magnitude
+Just like real number, points and vectors, complex numbers have a "length" or magnitude
 </p>
-<ul class="org-ul">
-<li>||a+ib|| = &radic;(a<sup>2</sup>+b<sup>2</sup>}</li>
-</ul>
+<blockquote>
+<p>
+&vert;a+ib&vert; = &radic;(a<sup>2</sup>+b<sup>2</sup>}
+</p>
+</blockquote>
 <div class="org-src-container">
 <pre class="src src-octave">abs(3<span style="color: #483d8b;">+</span>4i)
 </pre>
@@ -174,21 +215,27 @@ Just like points and vectors, complex numbers have a "length" or magnitude
 </div>
 
 <p>
-And just like for points and vectors, this norm is a real scalar value
+And just a real number (and later vectors) this norm is a real scalar value <br>
 </p>
 
 <p>
-The square of the norm is ofcourse just <i>a<sup>2</sup>+b<sup>2</sup></i> and this often comes up in things like the inner product.  For instance given a vector [x y] we can take its inner product with itself [x y][x y]<sup>T</sup> to get its norm-squared. In the trivial <code>1x1</code> case this will be [z][z]<sup>T</sup> which is z<sup>2</sup>.
+One easy way to avoid absolute values when getting the magnitude of a real value is to square the value <b>a<sup>2</sup>=|a|<sup>2</sup></b> 
 </p>
+</div>
 
+<div id="outline-container-orgd941e89" class="outline-3">
+<h3 id="orgd941e89">The Complex Conjugate</h3>
+<div class="outline-text-3" id="text-orgd941e89">
 <p>
-In the complex case where <i>z</i> is a complex number <i>a+ib</i> then we'd get <i>z*z<sup>T</sup>=z<sup>2</sup>=(a+ib)<sup>2</sup>=a<sup>2</sup>+i2ab-b<sup>2</sup></i> which is non-real and doesn't match our magnitude-squared. So using the transpose no longer works. But this norm-squared is still easy to express as a product
+Notice that in the complex case the square of the magnitude can be calculated directly with:
 </p>
-<ul class="org-ul">
-<li>a<sup>2</sup>+b<sup>2</sup> = (a+ib)(a-ib)</li>
-</ul>
+<blockquote>
 <p>
-With <i>a-ib</i> known as the <i>complex conjugate</i> of <i>a+ib</i>
+a<sup>2</sup>+b<sup>2</sup> = (a+ib)(a-ib)
+</p>
+</blockquote>
+<p>
+The <b>a-ib</b> is known as the <b>complex conjugate</b> of <b>a+ib</b>
 </p>
 <div class="org-src-container">
 <pre class="src src-octave">conj(3<span style="color: #483d8b;">+</span>4j)
@@ -212,14 +259,13 @@ v<span style="color: #483d8b;">*</span>conj(v)
 </div>
 
 <p>
-And what's convenient is that this actually still works for real values. Since a real value <i>a</i> can be written as the complex number a+i*0 we can write its complex conjugate as a-i*0 and see that it's norm is
+What's convenient about this way of getting the square of the magnitude is that is keeps working for real values. Since a real value <b>a</b> can be written as the complex number <b>a+i0</b> we can write its complex conjugate as <b>a-i0</b> and see that its norm is
 </p>
-<ul class="org-ul">
-<li>a<sup>2</sup>+0<sup>2</sup> = (a+i0)(a-i0) = a<sup>2</sup></li>
-</ul>
+<blockquote>
 <p>
-Which is just the absolute value of <i>a</i> squared
+a<sup>2</sup>+0<sup>2</sup> = (a+i0)(a-i0) = a<sup>2</sup>
 </p>
+</blockquote>
 <div class="org-src-container">
 <pre class="src src-octave">v <span style="color: #483d8b;">=</span> 3
 v<span style="color: #483d8b;">*</span>conj(v)
@@ -230,16 +276,45 @@ v<span style="color: #483d8b;">*</span>conj(v)
 <pre class="src src-org">9
 </pre>
 </div>
+</div>
+</div>
+<div id="outline-container-org932ffdb" class="outline-3">
+<h3 id="org932ffdb">Hermitian Transpose</h3>
+<div class="outline-text-3" id="text-org932ffdb">
+<p>
+To get lengths of 2D,3D,etc. points we use the inner product. It's like Pythagoras' Theorem except you leave the end result squared..
+</p>
+<blockquote>
+<p>
+v &middot; v<sup>T</sup><br>
+= [a b c d] &middot; [a b c d]<sup>T</sup><br>
+= a<sup>2</sup> + b<sup>2</sup> + c<sup>2</sup> + d<sup>2</sup>
+</p>
+</blockquote>
+<p>
+If we try to carry out the same operation using complex values for the vector elements, even in the <b>1x1</b> case we'd get a weird value
+</p>
+<blockquote>
+<p>
+z*z<sup>T</sup>=z<sup>2</sup>=(a+ib)<sup>2</sup>=a<sup>2</sup>+i2ab-b<sup>2</sup>
+</p>
+</blockquote>
+<p>
+this is a non-real value and doesn't match our understanding of length. So using the transpose to do an inner product with complex values doesn't give you a magnitude as before. 
+</p>
 
 <p>
-When dealing with vectors of values we define the 2-norm (what we typically think of as the magnitude) as the inner product of a vector with itself. Given a vector <i>v</i> we use matrix multiplication to take the matrix product <i>vv<sup>T</sup></i> . In the real case this will give you a sum of the squares of the values (ie. a sum of the magnitudes of the coordinates). But as we just saw, squaring complex values doesn't give the desired behavior and doesn't give us a real valued answer. The fix is to conjugate each entry before we "turn" the vector.
+But using complex conjugates in the transpose (a Hermitian transpose)  "fixes" the inner product
 </p>
-<ul class="org-ul">
-<li>[a+ib c+id]<sup>*</sup> = [a-ib c-d]<sup>T</sup></li>
-</ul>
+<blockquote>
 <p>
-We simply take a normal transpose and replaces the terms with their complex conjugates. This is called the Hermitian transpose
+[a+ib c+id]<sup>*</sup> = [a-ib c-d]<sup>T</sup>
 </p>
+
+<p>
+[a+ib c+id][a+ib c+id]<sup>*</sup> = [(a<sup>2</sup>+b<sup>2</sup>)   (c<sup>2</sup>+d<sup>2</sup>)]<sup>T</sup>
+</p>
+</blockquote>
 <div class="org-src-container">
 <pre class="src src-octave">v <span style="color: #483d8b;">=</span> [3<span style="color: #483d8b;">+</span>4i 6<span style="color: #483d8b;">+</span>8i]
 v<span style="color: #483d8b;">'</span>
@@ -263,45 +338,63 @@ v<span style="color: #483d8b;">'</span>
 </div>
 
 <p>
-Since the final value is a scalar we can carry out the Hermitian transpose on any 2 vectors we are doing an inner product on and the answer will remain the same:
+Since the final value is <i>always</i> scalar/real:
 </p>
+<blockquote>
+<p>
+ab<sup>*</sup> = (ab<sup>*</sup>)<sup>*</sup> = a<sup>*</sup>b
+</p>
+</blockquote>
 <ul class="org-ul">
-<li>a*b<sup>*</sup> = (a*b<sup>*</sup>)<sup>*</sup> = a<sup>*</sup>b</li>
+<li></li>
 </ul>
 <p>
-So either <b>a</b> or <b>b</b> can be conjugated. This is self evident because the innner product of <i>a</i> and <i>b</i> is the same as the inner product of <i>b</i> and <i>a</i>.
+This means that either <b>a</b> or <b>b</b> can be conjugated when you want to do an inner product of two complex values
 </p>
 
 <p>
-Most importantly, when the vector values are all real the Hermetian transpose will behave exactly like a "normal" transpose - so the Hermitian transpose effectively makes the standard transpose redundant in most cases.
+And again, when the vector values are all <i>real</i> the Hermetian transpose will behave exactly like a "normal" transpose - so the Hermitian transpose makes the standard transpose redundant
 </p>
 </div>
 </div>
-<div id="outline-container-org9eac8b0" class="outline-2">
-<h2 id="org9eac8b0">The Unit Circle</h2>
-<div class="outline-text-2" id="text-org9eac8b0">
+</div>
+
+<div id="outline-container-org9239766" class="outline-2">
+<h2 id="org9239766">The Unit Circle</h2>
+<div class="outline-text-2" id="text-org9239766">
 <p>
-Notice that when the <i>norm-squared</i> is equal to <i>1</i> the magnitude is also equal to <i>1</i>. All these special points who's length is equal to <i>1</i> lie on what's called the <i>unit cirle</i>. If we start with two complex numbers <i>a+ib</i> and <i>c+id</i> then
-</p>
-<ul class="org-ul">
-<li>(a<sup>2</sup>+b<sup>2</sup>)<sup>1/2</sup> = 1 <i>and therefore</i> a<sup>2</sup>+b<sup>2</sup> = 1</li>
-<li>(c<sup>2</sup>+d<sup>2</sup>)<sup>1/2</sup> = 1 <i>and therefore</i> c<sup>2</sup>+d<sup>2</sup> = 1</li>
-</ul>
-<p>
-As we saw, their product is the point <i>(ac-bd) + i(ad+bc)</i> and its length is also equal to 1. Proof:
-</p>
-<ul class="org-ul">
-<li>[ (ac-bd)<sup>2</sup> + (ad+bc)<sup>2</sup> ]<sup>(1/2)</sup></li>
-<li>[ a<sup>2</sup>c<sup>2</sup>-2acbd+b<sup>2</sup>d<sup>2</sup>+a<sup>2</sup>d<sup>2</sup>+2adbc+b<sup>2</sup>c<sup>2</sup> ]<sup>1/2</sup></li>
-<li>[ a<sup>2</sup>c<sup>2</sup>+b<sup>2</sup>b<sup>2</sup>+a<sup>2</sup>d<sup>d</sup>+b<sup>2</sup>c<sup>2</sup> ]<sup>1/2</sup></li>
-<li>[ c<sup>2</sup>(a<sup>2</sup>+b<sup>2</sup>) + d<sup>2</sup>(a<sup>2</sup>+b<sup>2</sup>) ]<sup>(1/2)</sup></li>
-</ul>
-<p>
-Through some subsitution we see that the length of the product is also equal to <i>1</i>
+Note the obvious statement that that when a number or vector is of length one then the square of its magnitude is also equal to <b>1</b>. All these special points of length <b>1</b> lie on what's called the <i>unit cirle</i>. 
 </p>
 
 <p>
-This tells us that while the general complex product is hard to think about, we know that least the product of any two points on the unit circle gives us a new point on the unit circle
+If we start with two complex numbers <b>a+ib</b> and <b>c+id</b> on the unit circle we can write
+</p>
+<blockquote>
+<p>
+(a<sup>2</sup>+b<sup>2</sup>)<sup>&frac12;</sup> = 1<br>
+a<sup>2</sup>+b<sup>2</sup> = 1<br>
+(c<sup>2</sup>+d<sup>2</sup>)<sup>&frac12;</sup> = 1<br>
+c<sup>2</sup>+d<sup>2</sup> = 1
+</p>
+</blockquote>
+<p>
+As we saw, their product is the point <b>(ac-bd) + i(ad+bc)</b>.<br>
+When we calculate the length of the product it also turns out to be <b>1</b>:
+</p>
+<blockquote>
+<p>
+[ (ac-bd)<sup>2</sup> + (ad+bc)<sup>2</sup> ]<sup>&frac12;</sup><br>
+[ a<sup>2</sup>c<sup>2</sup> - 2acbd + b<sup>2</sup>d<sup>2</sup> + a<sup>2</sup>d<sup>2</sup> + 2adbc + b<sup>2</sup>c<sup>2</sup> ]<sup>&frac12;</sup><br>
+[ a<sup>2</sup>c<sup>2</sup> + b<sup>2</sup>b<sup>2</sup> + a<sup>2</sup>d<sup>d</sup> + b<sup>2</sup>c<sup>2</sup> ]<sup>&frac12;</sup><br>
+[ c<sup>2</sup>(a<sup>2</sup> + b<sup>2</sup>) + d<sup>2</sup>(a<sup>2</sup> + b<sup>2</sup>) ]<sup>(&frac12;)</sup>
+</p>
+</blockquote>
+<p>
+(last step is subsituting the previous equalities in to see it's equal to <b>1</b>)
+</p>
+
+<p>
+This tells us that while in the general case the complex product is hard to visualize, we know that at least the product of any two points on the unit circle gives us a new point on the unit circle. 
 </p>
 <div class="org-src-container">
 <pre class="src src-octave">v <span style="color: #483d8b;">=</span> sqrt(0.2)<span style="color: #483d8b;">+</span>sqrt(0.8)<span style="color: #483d8b;">*</span>i
@@ -314,52 +407,67 @@ abs(v<span style="color: #483d8b;">*</span>w)
 <pre class="src src-org">0.9999999999999999
 </pre>
 </div>
-</div>
-</div>
 
-<div id="outline-container-org2bf0342" class="outline-2">
-<h2 id="org2bf0342">Euler's Formula</h2>
-<div class="outline-text-2" id="text-org2bf0342">
 <p>
-To make the multiplicative rotations more natural we would like to start describing the points in terms of polar coordinates. The initial conversion is straightforward:
+This is often described as a <i>rotation</i> of the point on the <i>unit circle</i>
 </p>
-<ul class="org-ul">
-<li>radius = r = (a<sup>2</sup>+b<sup>2</sup>)<sup>1/2</sup></li>
-<li>angle = &theta; = atan(b/a)</li>
-</ul>
+</div>
+</div>
+<div id="outline-container-orga33d721" class="outline-2">
+<h2 id="orga33d721">Euler's Formula</h2>
+<div class="outline-text-2" id="text-orga33d721">
+<p>
+To make the multiplicative rotations more natural we would like to start describing the points in terms of polar coordinates. The general conversion to polar coordinates is straightforward:
+</p>
+<blockquote>
+<p>
+radius = r = (a<sup>2</sup>+b<sup>2</sup>)<sup>1/2</sup><br>
+angle = &theta; = atan(b/a)
+</p>
+</blockquote>
 <p>
 Going back is also easy
 </p>
-<ul class="org-ul">
-<li>a = rcos(&theta;)</li>
-<li>b = rsin(&theta;)</li>
-</ul>
+<blockquote>
 <p>
-So the complex number <i>z=a+ib</i> can now be defined in terms of <i>r</i> and <i>theta</i> and we can rewrite <i>a+ib</i> as:
+a = rcos(&theta;)<br>
+b = rsin(&theta;)
 </p>
-<ul class="org-ul">
-<li>z = rcos(&theta;) + irsin(&theta;)</li>
-</ul>
-
+</blockquote>
 <p>
-A more compact representation of this is given by <b>Euler's formula</b>:
+So any complex number <b>z=a+ib</b>, through substitution, can be rewritten into a mathematically equivalent form using <b>r</b> and <b>&theta;</b>:
 </p>
-<ul class="org-ul">
-<li>re<sup>i&theta;</sup>=rcos(&theta;)+irsin(&theta;)</li>
-</ul>
+<blockquote>
+<p>
+z = rcos(&theta;) + irsin(&theta;)
+</p>
+</blockquote>
+<p>
+However a more compact representation of this is given by <b>Euler's formula</b>:
+</p>
+<blockquote>
+<p>
+re<sup>i&theta;</sup>=rcos(&theta;)+irsin(&theta;)
+</p>
+</blockquote>
 <p>
 A complete proof of this identity is a bit long, but the steps are:
 </p>
-<ul class="org-ul">
-<li>Show that the derivative of e<sup>x</sup> is e<sup>x</sup> (it's the only equation of the form a<sup>x</sup> that have this "stable" property)</li>
-<li>Using the chain rule we see that the <i>n<sup>th</sup></i> derivative of e<sup>ix</sup> will be equal to i<sup>n</sup>e<sup>ix</sup></li>
-<li>i<sup>n</sup> is a cyclic function with half its terms imaginary and half real</li>
-<li>We then describe e<sup>i&theta;</sup> around <i>0</i> in terms of the Taylor/Maclaurin Series</li>
-<li>Half the terms of the Taylor/Maclaurin Series will be imaginary and half real. 
-<ul class="org-ul">
+<ol class="org-ol">
+<li>Show that the derivative of <b>e<sup>x</sup></b> is <b>e<sup>x</sup></b> (it's the only equation of the form <b>a<sup>x</sup></b> that have this "stable" property)</li>
+<li>Using the chain rule we see that the <b>n<sup>th</sup></b> derivative of <b>e<sup>ix</sup></b> will be equal to <b>i<sup>n</sup>e<sup>ix</sup></b></li>
+<li><b>i<sup>n</sup></b> is a cyclic function with half its terms imaginary and half real</li>
+<li>We then describe <b>e<sup>i&theta;</sup></b> around <b>0</b> in terms of the <i>Taylor/Maclaurin Series</i></li>
+<li>Half the terms of the Taylor/Maclaurin Series will be imaginary and half real.</li>
 <li>The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function</li>
-</ul></li>
-</ul>
+</ol>
+<p>
+While the proof isn't very satisfying since there is no real way to visualize an imaginary power
+</p>
+
+<p>
+TODO: Add explanation of imaginary exponent&#x2026;
+</p>
 <div class="org-src-container">
 <pre class="src src-octave">123<span style="color: #483d8b;">*</span>exp(i<span style="color: #483d8b;">*</span>0.321)
 </pre>
@@ -383,18 +491,23 @@ A complete proof of this identity is a bit long, but the steps are:
 <p>
 Using the trigonometric properties (which are self evident if you think of the graph and even/odd functions)
 </p>
-<ul class="org-ul">
-<li>sin(-&theta;)=-sin(&theta;)</li>
-<li>cos(-&theta;)= cos(&theta;)</li>
-</ul>
+<blockquote>
+<p>
+sin(-&theta;)=-sin(&theta;)<br>
+cos(-&theta;)= cos(&theta;)
+</p>
+</blockquote>
 <p>
 We can rewrite the complex conjugate as
 </p>
-<ul class="org-ul">
-<li>a - ib</li>
-<li>r cos(&theta;) - <i>i</i> r sin(&theta;)</li>
-<li>r cos(-&theta;) + <i>i</i> r sin{-&theta;) = <b>re<sup>-&theta;</sup></b></li>
-</ul>
+<blockquote>
+<p>
+a - ib<br>
+r cos(&theta;) - <i>i</i> r sin(&theta;)<br>
+r cos(-&theta;) + <i>i</i> r sin{-&theta;) = <b>re<sup>-&theta;</sup></b>
+</p>
+</blockquote>
+
 <div class="org-src-container">
 <pre class="src src-octave">123<span style="color: #483d8b;">*</span>exp(<span style="color: #483d8b;">-</span>i<span style="color: #483d8b;">*</span>0.321)
 </pre>
@@ -444,9 +557,9 @@ Now notice that if <i>&omega;=2&pi;-&theta;</i> that:
 </div>
 </div>
 
-<div id="outline-container-org96683f6" class="outline-2">
-<h2 id="org96683f6">The roots of unity</h2>
-<div class="outline-text-2" id="text-org96683f6">
+<div id="outline-container-org842778c" class="outline-2">
+<h2 id="org842778c">The roots of unity</h2>
+<div class="outline-text-2" id="text-org842778c">
 <p>
 Furthermore if <i>&alpha;=2&pi;/n</i> then:
 </p>
@@ -507,9 +620,9 @@ rootOfUnity(n)<span style="color: #483d8b;">^</span>n
 </div>
 </div>
 
-<div id="outline-container-org6390382" class="outline-2">
-<h2 id="org6390382">Fourier series</h2>
-<div class="outline-text-2" id="text-org6390382">
+<div id="outline-container-org8baa7a1" class="outline-2">
+<h2 id="org8baa7a1">Fourier series</h2>
+<div class="outline-text-2" id="text-org8baa7a1">
 <p>
 The Fourier series is a very special sum of the exponents of an n<sup>th</sup> root of unity <b>&xi;</b>
 </p>
@@ -599,9 +712,9 @@ sum(fourierSeries(n<span style="color: #483d8b;">,</span>k))
 </div>
 
 
-<div id="outline-container-orga3d9c96" class="outline-2">
-<h2 id="orga3d9c96">Fourier Vectors</h2>
-<div class="outline-text-2" id="text-orga3d9c96">
+<div id="outline-container-org340e522" class="outline-2">
+<h2 id="org340e522">Fourier Vectors</h2>
+<div class="outline-text-2" id="text-org340e522">
 <p>
 It turns out that Fourier series, when places in a vector with different values of <i>k</i>, form mutually orthogonal vectors - here I choose <i>r</i> and <i>s</i> for <i>k</i> and carry out the Hermitian inner product:
 </p>
@@ -653,9 +766,9 @@ It's important to note that if you drop all the complex terms none of this works
 </div>
 </div>
 
-<div id="outline-container-orgc69c7d6" class="outline-2">
-<h2 id="orgc69c7d6">Fourier Matrix</h2>
-<div class="outline-text-2" id="text-orgc69c7d6">
+<div id="outline-container-org3d6c22a" class="outline-2">
+<h2 id="org3d6c22a">Fourier Matrix</h2>
+<div class="outline-text-2" id="text-org3d6c22a">
 <p>
 We've just shown that the fourier vectors are orthogonal as long as the <i>k</i>'s are different. The only caveat is that when <i>k=n</i> then the result is identical to <i>k=0</i> and when <i>k=n+1</i> it's identical to <i>k=1</i> .. etc. So there are actually only <i>n</i> distinct fourier vectors. The next step is self evident. We just choose take the <i>n</i> distinct vectors and slap them together into a fourier matrix <b>F</b> and end up withh an orthogonal basis:<br>
 <b>F</b> =
@@ -877,29 +990,29 @@ real(round(I<span style="color: #483d8b;">.*</span>1000)<span style="color: #483
 </div>
 
 <div class="org-src-container">
-<pre class="src src-org"><span style="color: #0000ff;">| 1 | 0 | 0 | 0 | 0 | 0 | 0 |</span>
-<span style="color: #0000ff;">| 0 | 1 | 0 | 0 | 0 | 0 | 0 |</span>
-<span style="color: #0000ff;">| 0 | 0 | 1 | 0 | 0 | 0 | 0 |</span>
-<span style="color: #0000ff;">| 0 | 0 | 0 | 1 | 0 | 0 | 0 |</span>
-<span style="color: #0000ff;">| 0 | 0 | 0 | 0 | 1 | 0 | 0 |</span>
-<span style="color: #0000ff;">| 0 | 0 | 0 | 0 | 0 | 1 | 0 |</span>
-<span style="color: #0000ff;">| 0 | 0 | 0 | 0 | 0 | 0 | 1 |</span>
+<pre class="src src-org"><span style="color: #0000ff;">| 0.636 |     0 |     0 |     0 |     0 |     0 |     0 |</span>
+<span style="color: #0000ff;">|     0 | 0.636 |     0 |     0 |     0 |     0 |     0 |</span>
+<span style="color: #0000ff;">|     0 |     0 | 0.636 |     0 |     0 |     0 |     0 |</span>
+<span style="color: #0000ff;">|     0 |     0 |     0 | 0.636 |     0 |     0 |     0 |</span>
+<span style="color: #0000ff;">|     0 |     0 |     0 |     0 | 0.636 |     0 |     0 |</span>
+<span style="color: #0000ff;">|     0 |     0 |     0 |     0 |     0 | 0.636 |     0 |</span>
+<span style="color: #0000ff;">|     0 |     0 |     0 |     0 |     0 |     0 | 0.636 |</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org72642ee" class="outline-2">
-<h2 id="org72642ee">Frequency Space?</h2>
-<div class="outline-text-2" id="text-org72642ee">
+<div id="outline-container-orgf23c05e" class="outline-2">
+<h2 id="orgf23c05e">Frequency Space?</h2>
+<div class="outline-text-2" id="text-orgf23c05e">
 <p>
 We constructed a very convenient basis that's easily invertible and independent of the input and we can now easily move to the basis and back but it's not exactly what one would imagine as "frequency space" and a few things are unresolved
 </p>
 </div>
 
-<div id="outline-container-org4c86427" class="outline-3">
-<h3 id="org4c86427">How does a sinusoidal look in this basis?</h3>
-<div class="outline-text-3" id="text-org4c86427">
+<div id="outline-container-org0ad736f" class="outline-3">
+<h3 id="org0ad736f">How does a sinusoidal look in this basis?</h3>
+<div class="outline-text-3" id="text-org0ad736f">
 <p>
 If we can carefully pair Euler functions we get back bare sine/cosine functions with no imaginary parts
 </p>
@@ -1044,9 +1157,9 @@ So that:
 </div>
 </div>
 
-<div id="outline-container-org2fcaf32" class="outline-3">
-<h3 id="org2fcaf32">How does a phase shift look in this basis?</h3>
-<div class="outline-text-3" id="text-org2fcaf32">
+<div id="outline-container-org7626577" class="outline-3">
+<h3 id="org7626577">How does a phase shift look in this basis?</h3>
+<div class="outline-text-3" id="text-org7626577">
 <p>
 Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combining the two, each complex coordinate in the fourier basis generates one of each and the result is purely real
 </p>
@@ -1147,28 +1260,35 @@ quickRound( abs(v2)<span style="color: #483d8b;">'</span>)
 </pre>
 </div>
 
-<div class="org-src-container">
-<pre class="src src-octave">v3 <span style="color: #483d8b;">=</span> fourierMatrix(n)<span style="color: #483d8b;">'*</span>sin(2<span style="color: #483d8b;">*</span>samples <span style="color: #483d8b;">+</span> pi)<span style="color: #483d8b;">'</span>
-ans <span style="color: #483d8b;">=</span> atan(imag(v3)<span style="color: #483d8b;">./</span>real(v3))
-</pre>
-</div>
-
-<div class="org-src-container">
-<pre class="src src-org"><span style="color: #0000ff;">|                   0 |</span>
-<span style="color: #0000ff;">| 0.06656816377582381 |</span>
-<span style="color: #0000ff;">|   1.570796326794897 |</span>
-<span style="color: #0000ff;">|  0.3693336576736256 |</span>
-<span style="color: #0000ff;">|  -0.982793723247329 |</span>
-<span style="color: #0000ff;">|   0.218668945873942 |</span>
-<span style="color: #0000ff;">|  -1.124690777851493 |</span>
-<span style="color: #0000ff;">|  -1.570796326794895 |</span>
-<span style="color: #0000ff;">| -0.6316906343389693 |</span>
-</pre>
-</div>
-
 
 <p>
-This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of something like A*cos(2&pi;&phi;) will fluctuate with <i>&phi;</i> it's corresponding Euler basis vector <i>A&xi;<sup>&phi;</sup></i> will have constant magnitude <i>A</i> for all <i>&phi;</i> (and we just ignore the symmetric mirrored basis vectors that were making this fluctuate)
+And we can also determine the input's phase shift (though this is typically less useful)
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">v3 <span style="color: #483d8b;">=</span> fourierMatrix(n)<span style="color: #483d8b;">'*</span>sin(2<span style="color: #483d8b;">*</span>samples <span style="color: #483d8b;">+</span> pi)<span style="color: #483d8b;">'</span>
+quickRound(
+    atan(imag(v3)<span style="color: #483d8b;">./</span>real(v3)))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #0000ff;">|      0 |</span>
+<span style="color: #0000ff;">|  0.067 |</span>
+<span style="color: #0000ff;">|  1.571 |</span>
+<span style="color: #0000ff;">|  0.369 |</span>
+<span style="color: #0000ff;">| -0.983 |</span>
+<span style="color: #0000ff;">|  0.219 |</span>
+<span style="color: #0000ff;">| -1.125 |</span>
+<span style="color: #0000ff;">| -1.571 |</span>
+<span style="color: #0000ff;">| -0.632 |</span>
+</pre>
+</div>
+<p>
+B/c of numerical/computational error you end up with phase shifts for all values - even ones where no signal is present
+</p>
+
+<p>
+This all illustrates a clear advantage of the Euler complex sinusoidals over real sine/cosine waves. While the magnitude of an equation like A*cos(2&pi;&phi;) changes with <i>&phi;</i>, its corresponding Euler basis vector <i>A&xi;<sup>&phi;</sup></i> will have constant magnitude <i>A</i> for all <i>&phi;</i> (and we just ignore the symmetric mirrored basis vectors that were making the original fluctuate)
 </p>
 
 <blockquote>
@@ -1178,9 +1298,9 @@ This all illustrates a clear advantage of the Euler complex sinusoidals over rea
 </blockquote>
 </div>
 </div>
-<div id="outline-container-org406a214" class="outline-3">
-<h3 id="org406a214">Which frequencies are observable?</h3>
-<div class="outline-text-3" id="text-org406a214">
+<div id="outline-container-org75b6ca0" class="outline-3">
+<h3 id="org75b6ca0">Which frequencies are observable?</h3>
+<div class="outline-text-3" id="text-org75b6ca0">
 <p>
 When constructing our <i>sine</i> and <i>cosine</i> we noted in passing that <i>&xi;<sup>-&phi;</sup>{} = &xi;<sup>n-&phi;</sup></i> and we notice how each sigular frequency takes up two spots in the coordinate vector - one at <i>&phi;</i> and one at <i>n-&phi;</i>. This is an artifact of our sampling. Regular samples at one frequency will look identical to samples at other frequencies. The problems (and potential advantages) of frequency replication and aliasing <a href="./aliasing.html">are discussed separately</a>
 </p>
@@ -1196,20 +1316,29 @@ In practical terms this means that you can't distinguish <i>&phi;</i> and <i>n-&
 </blockquote>
 </div>
 </div>
-<div id="outline-container-orgad47f34" class="outline-3">
-<h3 id="orgad47f34">How does a frequency who's period isn't a whole fraction of the sample rate come out in this basis?</h3>
-<div class="outline-text-3" id="text-orgad47f34">
+<div id="outline-container-org4496499" class="outline-3">
+<h3 id="org4496499">How does a frequency who's period isn't a whole fraction of the sample rate come out in this basis?</h3>
+<div class="outline-text-3" id="text-org4496499">
 <p>
 All the previous math had assumed for simplicity that the input was at a frequency that matches one of the basis vectors - that it in effect produced one coordinate point. But how about if <i>&phi;</i> is not equal to a <i>k</i> value?
 </p>
 
+<div class="org-src-container">
+<pre class="src src-octave">v <span style="color: #483d8b;">=</span> fourierMatrix(n)<span style="color: #483d8b;">'*</span>sin(4.321<span style="color: #483d8b;">*</span>samples <span style="color: #483d8b;">+</span> 2.345)<span style="color: #483d8b;">'</span>
+quickRound( abs(v)<span style="color: #483d8b;">'</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="color: #0000ff;">| 0.816 | 0.869 | 1.068 | 1.652 | 5.402 | 5.402 | 1.652 | 1.068 | 0.869 |</span>
+</pre>
+</div>
 
 
 <ul class="org-ul">
 <li>[1 - e<sup>i(w<sub>x</sub>-w<sub>k</sub>)NT</sup>] / [1 - e<sup>i(w<sub>x</sub>-w<sub>k</sub>)T</sup>]</li>
 <li>[1 - cos((w<sub>x</sub>-w<sub>k</sub>)NT) + i sin((w<sub>x</sub>-w<sub>k</sub>)NT) ] / [1 - cos((w<sub>x</sub>-w<sub>k</sub>)T) + i sin((w<sub>x</sub>-w<sub>k</sub>)T) ]</li>
 </ul>
-
 
 
 <ul class="org-ul">
