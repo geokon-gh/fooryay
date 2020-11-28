@@ -917,6 +917,110 @@ quickRound( abs(v)')
  + = [e^{i(x-k)T/2*(N+(N-1))}- e^{-i(x-k)T/2*(N+(N-1))}]/[e^{i(x-k)T/2}- e^{-i(x-k)T/2)}]
 
 
+* Amplitude Modulation
+This is a common occurance. You have a carrier wave that is modulated by a signal
+
+The slower signal is called the /carrier wave/
+#+BEGIN_QUOTE
+[1+ \alpha{} \middot{} a_{m}(t)] \middot{} A_{c}sin(\omega{}_{c}t+\phi_{c})
+#+END_QUOTE
+- A_{c}sin(\omega{}t+\phi_{c}) :: is the carrier wave
+- \alpha{} :: the modulation index [0,1]
+- a_{m} :: is the signal
+- \omega{}_{c} :: is the center frequency
+The end result is a sum of the carrier and the product of the carrier with the signal *a_{m}*
+#+BEGIN_QUOTE
+A_{c}sin(\omega{}_{c}t+\phi_{c}) + \alpha{} a_{m}(t) A_{c}sin(\omega{}_{c}t+\phi_{c})
+#+END_QUOTE
+
+** Sinusoidal AM
+If *a_{m}* is a sinusoid then
+#+BEGIN_QUOTE
+A_{c}sin(\omega{}_{c}t+\phi_{c}) + \alpha{} sin(\omega{}_{m}t+\phi_{m}) A_{c}sin(\omega{}t+\phi_{c})
+#+END_QUOTE
+#+BEGIN_SRC octave :results silent
+  n = 200
+  x = [0:2*pi/n:(2*pi-2*pi/n)]; % Maybe there is less stupid way to do this
+  wc = 10;
+  wm = 2;
+  a = 0.5;
+  y = sin(wc .* x) + a * sin(wm.*x) .* sin(wc.*x);
+  scatter(x,y);
+  hold on;
+  axis "off"
+  print "-S720,160" "am-product.svg"
+  hold off;
+#+END_SRC
+[[./am-product.svg]]
+
+However this product is inconvenient b/c it's not immediately clear how a product of sinusoids looks in the frequency domain. So here we use the trigonometric identity
+#+BEGIN_QUOTE
+sin(A) sin(B) = [ cos(A-B) - cos(A+B) ] / 2
+#+END_QUOTE
+
+And the end result is a sum of three sinusoids - the latter two have a frequency slight shifted off the carrier frequency 
+
+#+BEGIN_QUOTE
+A_{c}sin(\omega{}_{c}t+\phi_{c}) + \alpha{} cos[(\omega{}_{c} - \omega{}_{m})t]/2 - \alpha{} cos[(\omega{}_{c} + \omega{}_{m})t]/2
+#+END_QUOTE
+
+#+BEGIN_SRC octave :results silent
+  y = sin(wc.*x) + a * cos((wc-wm).*x)./2 - a * cos((wc+wm).*x)./2
+  scatter(x, y)
+  hold on;
+  axis "off"
+  print "-S720,160" "am-decomposed.svg"
+  hold off;
+#+END_SRC
+[[./am-decomposed.svg]]
+
+#+BEGIN_SRC octave :results silent
+  scatter(x,abs(fourierMatrix(n)'*y'));
+  hold on;
+  axis "off"
+  print "-S720,160" "am-freq.svg"
+  hold off;
+#+END_SRC
+
+[[./am-freq.svg]]
+
+* Frequency modulation
+Not as omnipresent is frequency modulation
+
+#+BEGIN_QUOTE
+A_{c}cos(\omega_{c}t + \phi{}_{c} + A_{m} sin(\omega{}_{m}t + \phi{}_{m}))
+#+END_QUOTE
+#+BEGIN_SRC octave :results silent
+  y = a .* cos(wc.*x .+ 2 .* cos(wm.*x))
+  scatter(x, y)
+  hold on;
+  axis "off"
+  print "-S720,160" "fm-direct.svg"
+  hold off;
+#+END_SRC
+[[./fm-direct.svg]]
+
+However this results in a more complicated frequency spread invlovling Bessle functions. Here is how it looks.. but an explanation not provided b/c I don't understand it.. see: https://ccrma.stanford.edu/~jos/mdft/Bessel_Functions.html
+
+#+BEGIN_SRC octave :results silent
+  scatter(x,abs(fourierMatrix(n)'*y'));
+  hold on;
+  axis "off"
+  print "-S720,160" "fm-freq.svg"
+  hold off;
+#+END_SRC
+[[./fm-freq.svg]]
+* Addendum
+
+** LTI Systems
+
+Linear time invariant systems
+- characterizes all filters
+- sinusoids going through a LTI give you back the same sinusoid but with the amplitude or phase modified
+- LTI systems can be written as a Topletz matrix
+- If it's causal then the Topletz matrix is lower triangular
+
+
 
 
 
