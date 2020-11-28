@@ -3,7 +3,14 @@
 #+INCLUDE: "../web/config.org"
 
 * Goal
-- The goal is to build a new orthonormal basis. Orthonormality means that points in this basis aren't stretched or scaled and it allows the basis to be easily invertible. 
+- The goal is to build a new orthonormal basis.
+#+BEGIN_QUOTE
+Orthonormality means :
+- points in this basis aren't stretched or scaled (ie. they maintain their length/norm)
+- the basis vectors are orthogonal - so their inner product is equal to *0*
+- the basis vectors are of length *1* - the inner product with themselves is *1*
+- the basis will be easily invertible (through transposition)
+#+END_QUOTE
 
 - We leverage multiplicative properties of complex numbers to construct this basis. It will make periodic components of our input apparant and can allow us to reason about frequencies and phases of signal components. 
 
@@ -251,16 +258,17 @@ However a more compact representation of this is given by *Euler's formula*:
 #+BEGIN_QUOTE
 re^{i\theta}=r\cos(\theta)+ir\sin(\theta)
 #+END_QUOTE
+
 A complete proof of this identity is a bit long, but the steps are:
-1. Show that the derivative of *e^x* is *e^x* (it's the only equation of the form *a^x* that have this "stable" property)
+1. Show that the derivative of *e^x* is *e^x* (it's the only equation of the form *a^x* that have this "stable" property). Note how the derivatives of *sin* and *cos* have a similar property..
 2. Using the chain rule we see that the *n^{th}* derivative of *e^{ix}* will be equal to *i^{n}e^{ix}*
 3. *i^{n}* is a cyclic function with half its terms imaginary and half real
-4. We then describe *e^{i\theta}* around *0* in terms of the /Taylor/Maclaurin Series/
-5. Half the terms of the Taylor/Maclaurin Series will be imaginary and half real. 
+4. We then describe *e^{i\theta}* around *0* in terms of the /Taylor/Maclaurin Series/ - In so doing we avoid having to directly explain what is an imaginary exponent..
+5. Half the terms of the Taylor/Maclaurin Series will be imaginary (odd *n* powers) and half real (even *n* powers)
 6. The real terms will match the Maclaurin Series of a cosine function and the imaginary will match those of the sine function
-While the proof isn't very satisfying since there is no real way to visualize an imaginary power
 
-TODO: Add explanation of imaginary exponent...
+The proof isn't super satisfying since there is no real way to visualize an imaginary power
+
 #+BEGIN_SRC octave
 123*exp(i*0.321)
 #+END_SRC
@@ -279,6 +287,20 @@ TODO: Add explanation of imaginary exponent...
 116.7172063656597+38.80842354690544i
 #+END_SRC
 
+And since /sine/ and /cosine/ are cyclical, so are the real and imaginary components of *re^{i\theta}*
+#+BEGIN_SRC octave :results silent
+  x = [0:0.01:2*pi]
+  y = exp(j.*x)
+  plot(x,real(y))
+  line(x,imag(y))
+  hold on;
+  axis "off"
+  print "-S720,160" "euler-sin-cos.svg"
+#+END_SRC
+
+[[./euler-sin-cos.svg]]
+
+
 Using the trigonometric properties (which are self evident if you think of the graph and even/odd functions)
 #+BEGIN_QUOTE
 sin(-\theta)=-sin(\theta)\\
@@ -291,19 +313,15 @@ We can rewrite the complex conjugate as
  r \cos(-\theta) + /i/ r \sin{-\theta) = *re^{-\theta}*
 #+END_QUOTE
 
-#+BEGIN_SRC octave
-123*exp(-i*0.321)
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC org
-116.7172063656597-38.80842354690544i
-#+END_SRC
-
-As we just saw in the previous section, the radius in the products of points on the unit cirle is always equal to one. so a polar coordinate system will bring the problem down from 2 variables, /a/ and /b/, to just one constant /radius/ of size /1/ and one variable /angle/ \theta. The points on the unit circle can all be written down as:
-- e^{i\theta}
+As we just saw in the previous section, the radius in the products of points on the unit cirle is always equal to one. so a polar coordinate system will bring the problem down from 2 variables, *a* and *b*, to just one constant /radius/ *r* of size /1/ and one variable /angle/ *\theta{}*. The points on the unit circle can all be written down as:
+#+BEGIN_QUOTE
+e^{i\theta}
+#+END_QUOTE
 And we can say the magnitude of the product of two of these is always equal to /1/
- -  || e^{/i/\theta} * e^{/i/\omega} || = 1
+#+BEGIN_QUOTE
+\shy{} || e^{/i/\theta} * e^{/i/\omega} || = || e^{/i/\shy{}(\theta+\omega)} || = 1
+#+END_QUOTE
+
 #+BEGIN_SRC octave
 abs(exp(i*0.345)*exp(i*1.789))
 #+END_SRC
@@ -312,8 +330,12 @@ abs(exp(i*0.345)*exp(i*1.789))
 #+BEGIN_SRC org
 1
 #+END_SRC
-Now notice that if /\omega=2\pi-\theta/ that:
- - e^{ /i/ (\theta+\omega)} = e^{ /i/ 2\pi} = cos(2\pi) + /i/ sin(2\pi) = 1 + /i/ 0 = 1
+
+Now notice that if *\omega= 2\pi - \theta* that:
+#+BEGIN_QUOTE
+e^{ /i/ (\theta+\omega)} = e^{ /i/ 2\pi} = cos(2\pi) + /i/ sin(2\pi) = 1 + /i/ 0 = 1
+#+END_QUOTE
+
 #+BEGIN_SRC octave
 exp(i*2*pi)
 #+END_SRC
@@ -325,26 +347,31 @@ exp(i*2*pi)
 
 * The roots of unity
 
-Furthermore if /\alpha=2\pi/n/ then:
- - [e^{i\alpha}]^{n} = e^{in\alpha} = e^{i2\pi} = 1
-This tells us that taking the n^{th} root of /1/ has a complex numbers solution! (in addition to the trivial solution of /1/)
- - 1^{1/n} = e^{i2\pi/n}
+Furthermore if *\alpha=2\pi/n* then:
+#+BEGIN_QUOTE
+[e^{i\alpha}]^{n} = e^{in\alpha} = e^{i2\pi} = 1
+#+END_QUOTE
+This tells us that taking the n^{th} root of number *1* more solutions than just *1* (and *-1* for even /n/'s). It also has additional  complex numbers solution!
+#+BEGIN_QUOTE
+1^{1/n} = e^{i2\pi/n}
+#+END_QUOTE
 The typical notation here is to say 
- - \xi = e^{-i2\pi/n} = \cos(2\pi/n)+i\sin(2\pi/n)
- - \xi^{n}=1
-This \xi is called the *n^{th} root of unity*
+#+BEGIN_QUOTE
+\xi_{n} = e^{-i2\pi/n} = \cos(2\pi/n) + i\sin(2\pi/n)\\
+\xi_{n}^{n}=1
+#+END_QUOTE
+This *\xi_{n}* is called the *n^{th} root of unity* (*Note*: I've added the subscript *n* for clarity - though it's usually omitted)
 #+BEGIN_SRC octave :results silent
   function res = rootOfUnity(n)
-    res = exp(i*2*pi./n)
+    res = exp(i*2*pi./n);
   end
 #+END_SRC
 
-By extension we can also see that:
- - \xi^{n+j} = \xi^{n}\xi^{j} = \xi^{j}
- - \xi^{nk} = [\xi^{n}]^{k} = [e^{-i2\pi}]^k = 1^k = 1
 
 #+BEGIN_SRC octave
-rootOfUnity(7)
+n = 7;
+nThRootOfUnity = rootOfUnity(n);
+ans = nThRootOfUnity
 #+END_SRC
 
 #+RESULTS:
@@ -353,8 +380,7 @@ rootOfUnity(7)
 #+END_SRC
 
 #+BEGIN_SRC octave
-n = 7;
-rootOfUnity(n)^n
+nThRootOfUnity^n
 #+END_SRC
 
 #+RESULTS:
@@ -362,18 +388,46 @@ rootOfUnity(n)^n
 1-4.996003610813204e-16i
 #+END_SRC
 
+
+#+BEGIN_SRC octave :results silent
+  scatter(2*pi/n, real(nThRootOfUnity),color='b');
+  scatter(2*pi/n, imag(nThRootOfUnity),color='r');
+  print "-S720,160" "one-nth-root.svg";
+#+END_SRC
+
+[[./one-nth-root.svg]]
+
+Now we again can see the cyclicity:
+#+BEGIN_QUOTE
+ \xi_{n}^{n+j} = \xi_{n}^{n}\times{}\xi_{n}^{j} = \xi_{n}^{j}\\
+ \xi_{n}^{nk} = [\xi_{n}^{n}]^{k} = [e^{-i2\pi}]^k = 1^k = 1
+#+END_QUOTE
+
+#+BEGIN_SRC octave :results silent
+  k = n;
+  kPowersOfTheNthRoot = nThRootOfUnity.^[0:k];
+  scatter((2*pi/n).*[0:k], real(kPowersOfTheNthRoot),color='b');
+  scatter((2*pi/n).*[0:k], imag(kPowersOfTheNthRoot),color='r');
+  print "-S720,160" "k-nth-root.svg";
+  hold off;
+#+END_SRC
+
+[[./k-nth-root.svg]]
+
 * Fourier series
 
-The Fourier series is a very special sum of the exponents of an n^{th} root of unity *\xi*
- -  1 + \xi^k + \xi^{2k} + ... + \xi^{(n-2)k} + \xi^{(n-1)k}
+The Fourier series is a very special sum of the exponents of an n^{th} root of unity : *\xi_{n}*\\
+#+BEGIN_QUOTE
+1 + \xi_{n}^k + \xi_{n}^{2k} + ... + \xi_{n}^{(n-2)k} + \xi_{n}^{(n-1)k}
+#+END_QUOTE
+
 #+BEGIN_SRC octave :results silent
   function res = fourierSeries(n,k)
     res = rootOfUnity(n).^((0:(n-1))*k);
   end
 #+END_SRC
 #+BEGIN_SRC octave
-  ans=disp(
-          fourierSeries(5,3).')
+  ans=disp(fourierSeries(5,3).')
 #+END_SRC
 
 #+RESULTS:
@@ -385,12 +439,16 @@ The Fourier series is a very special sum of the exponents of an n^{th} root of u
 | -0.80902 + 0.58779i |
 |                     |
 #+END_SRC
-Here the /k/ can be any integer value, but the sum will always maintain the property that if it's multiplied by /\xi^k/ we get the same sequence back. The last term goes to /\xi^{nk} = 1/ and the remaining terms in effect shift places giving us:
- -  \xi^k + \xi^{2k} + \xi^{3k} + ... + \xi^{(n-1)k} + 1
+We will see that no matter the what integer value is choosen for *k* - the sum will be equal to *0*.
+
+Start by noticing that this sum when multiplied by *\xi_{n}^k* gives the same sequence back. The last term goes to *\xi_{n}^{nk} = =[\xi_{n}^{n}]^{k} = 1^{k} = 1* and the remaining terms in effect shift places giving us:
+#+BEGIN_QUOTE
+\xi_{n}^k + \xi_{n}^{2k} + \xi_{n}^{3k} + ... + \xi_{n}^{(n-1)k} + 1
+#+END_QUOTE
+
 #+BEGIN_SRC octave
   n=5,k=3
-  ans=disp(
-          (fourierSeries(n,k).*(rootOfUnity(n)^k)).')
+  ans=disp((fourierSeries(n,k).*(rootOfUnity(n)^k)).')
 #+END_SRC
 
 #+RESULTS:
@@ -404,14 +462,17 @@ Here the /k/ can be any integer value, but the sum will always maintain the prop
 #+END_SRC
 
 So we can write
- - \xi^k * /fourier-series/ = /fourier-series/
+ - \xi_{n}^k * /fourier-series/ = /fourier-series/
 Therefore
- - \xi^k * /fourier-series/ - /fourier-series/ = 0
- - /fourier-series/ * (\xi^k - 1) = 0
+ - \xi_{n}^k * /fourier-series/ - /fourier-series/ = 0
+ - /fourier-series/ * (\xi_{n}^k - 1) = 0
 And therefore.. 
  - /fourier-series/  = 0
 .. or to write it out again in full form - for all integer values of /k/
- -  1+\xi^k+\xi^{2k}+...+\xi^{(n-2)k}+\xi^{(n-1)k} = 0
+#+BEGIN_QUOTE
+1+\xi_{n}^k+\xi_{n}^{2k}+...+\xi_{n}^{(n-2)k}+\xi_{n}^{(n-1)k} = 0
+#+END_QUOTE
+
 #+BEGIN_SRC octave
 n=7,k=1
 sum(fourierSeries(n,k))
@@ -422,14 +483,28 @@ sum(fourierSeries(n,k))
 -3.33066907387547e-16
 #+END_SRC
 
-
 * Fourier Vectors
 
-It turns out that Fourier series, when places in a vector with different values of /k/, form mutually orthogonal vectors - here I choose /r/ and /s/ for /k/ and carry out the Hermitian inner product:
- - [ 1 \xi^r \xi^{2r} ... \xi^{(n-1)r} ] [ 1 \xi^s \xi^{2s} ... \xi^{(n-1)s} ]^{*}
- - [ 1 \xi^r \xi^{2r} ... \xi^{(n-1)r} ] [ 1 \xi^{-s} \xi^{-2s} ... \xi^{-(n-1)s} ]^{T}
- - 1*1 + \xi^r*\xi^-s + \xi^{2r}*\xi^{-2s} + ... + \xi^{(n-2)r}\xi^{-(n-2)s}} + \xi^{(n-1)r}\xi^{-(n-1)s}
- - 1 + \xi^{r-s} + \xi^{2(r-s)} + ... + \xi^{(n-2)(r-s)} + \xi^{(n-1)(r-s)}
+Not immediately apparant, but it turns out that the Fourier series terms, when places in a vector with different values of *k*, form mutually orthogonal vectors
+
+Here I choose *r* and *s* for two arbitrary values of *k* and carry out the Hermitian inner product:
+#+BEGIN_QUOTE
+[ 1 \xi^r \xi^{2r} ... \xi^{(n-1)r} ] [ 1 \xi^s \xi^{2s} ... \xi^{(n-1)s} ]^{*} \\
+[ 1 \xi^r \xi^{2r} ... \xi^{(n-1)r} ] [ 1 \xi^{-s} \xi^{-2s} ... \xi^{-(n-1)s} ]^{T} \\
+1\times{}1 + \xi^{r}\xi^{-s} + \xi^{2r}\xi^{-2s} + ... + \xi^{(n-2)r}\xi^{-(n-2)s} + \xi^{(n-1)r}\xi^{-(n-1)s} \\
+1 + \xi^{r-s} + \xi^{2(r-s)} + ... + \xi^{(n-2)(r-s)} + \xi^{(n-1)(r-s)}
+#+END_QUOTE
+
+The resulting *r-s*'s in the exponent are effectively just another value of *k* - and we know the sum of a Fourier series with any *k* is equal to *0*
+
+The exception is when *r=s*:
+#+BEGIN_QUOTE
+ [ 1 \xi^k \xi^{2k} ... \xi^{(n-1)k} ]  [ 1 \xi^k \xi^{2k} ... \xi^{(n-1)k} ]^{*} \\
+ 1\times{}1 + \xi^{k}\times{}\xi^{-k} + \xi^{2k}\times{}\xi^{-2k} + ... + \xi^{(n-1)k}\times{}\xi^{-(n-1)k} \\
+ 1 + \xi^{0} + \xi^{0} + ... + \xi^{0} \\
+ 1 + 1 + 1 + ... + 1 = n
+#+END_QUOTE
+
 #+BEGIN_SRC octave
   r=7, s=13, n= 11
   fourierSeries(n,r)*fourierSeries(n,s)'
@@ -440,11 +515,6 @@ It turns out that Fourier series, when places in a vector with different values 
 -2.331468351712829e-15
 #+END_SRC
 
-Now /r-s/ is just another /k/ value from our Fourier series and so the sum will go to /0/ *except* when /r=s/:
- - [ 1 \xi^k \xi^{2k} ... \xi^{(n-1)k} ]  [ 1 \xi^k \xi^{2k} ... \xi^{(n-1)k} ]^{*}
- - 1*1 + \xi^{k}\xi^{-k} + \xi^{2k}\xi^{-2k} + ... + \xi^{(n-1)k} \xi^{-(n-1)k}
- - 1*1 + \xi^{0} + \xi^{0} + ... + \xi^{0}
- - 1 + 1 + 1 + ... + 1 = n
 #+BEGIN_SRC octave
   r=7, s=7, n= 11
   fourierSeries(n,r)*fourierSeries(n,s)'
@@ -455,15 +525,15 @@ Now /r-s/ is just another /k/ value from our Fourier series and so the sum will 
 11.00000000000002
 #+END_SRC
 
-You could also just view the /r=s/ case as the sum of the 2-norms of the roots of unity. There are /n/ terms and each one is necessarily of length /1/. Either way, the answer will always be /n/ no matter what /k/ you choose
-and therefore the 2-norm/length all all fourier vectors is /n^{1/2}/
+You could also just view the *r=s* case as the inner product of a the vector with itself. Or also as the length of the vector squared. Each term is the magnitude of each Euler exponent and they're on the unit cirlce - so their lengths will always be *1*. There are *n* terms and each one is now necessarily of length *1*. So the sum will always be *n* no matter what *k* is choosen - therefore the 2-norm/length of all fourier vectors, reglardless of *k* is *\radic{}n*
 
-It's important to note that if you drop all the complex terms none of this works! You can't construct mutually orthogonal vectors out of purely real sine/cosine waves
+*Note*: that if you drop all the complex terms none of this works! You can't construct mutually orthogonal vectors out of purely real sine/cosine waves
 
 * Fourier Matrix
 
 We've just shown that the fourier vectors are orthogonal as long as the /k/'s are different. The only caveat is that when /k=n/ then the result is identical to /k=0/ and when /k=n+1/ it's identical to /k=1/ .. etc. So there are actually only /n/ distinct fourier vectors. The next step is self evident. We just choose take the /n/ distinct vectors and slap them together into a fourier matrix *F* and end up withh an orthogonal basis:\\
 *F* =
+#+BEGIN_QUOTE
 | 1 | 1         | 1         | 1     | .. |
 | 1 | \xi       | \xi^2     | \xi^3 | .. |
 | 1 | \xi^2     | \xi^4     | \xi^6 | .. |
@@ -471,9 +541,11 @@ We've just shown that the fourier vectors are orthogonal as long as the /k/'s ar
 | 1 | ...       | ...       | ...   | .. |
 | 1 | \xi^{n-1} | \xi^{n-2} | ...   | .. |
 
+#+END_QUOTE
+
 #+BEGIN_SRC octave :results silent
   function F = fourierMatrix(n)
-    F=zeros(n,0)
+    F=zeros(n,0);
     for k = 0:(n-1)
       F=horzcat(F,fourierSeries(n,k).');
     end
@@ -481,7 +553,8 @@ We've just shown that the fourier vectors are orthogonal as long as the /k/'s ar
 #+END_SRC
 
 #+BEGIN_SRC octave
-  F = fourierMatrix(7);
+  n = 7;
+  F = fourierMatrix(n);
   round(F.*1000)./1000
 #+END_SRC
 
@@ -498,12 +571,14 @@ We've just shown that the fourier vectors are orthogonal as long as the /k/'s ar
 
 Looking at the real components of the columns - there is one constant component (the first column) and then /n/ samples of the /cosine/ function over one oscillation for the second column, /n/ samples over 2 periods for the 3rd column, /n/ samples over 3 periods.. etc. \\
 \real(*F*) =
+#+BEGIN_QUOTE
 | 1 | 1                 | 1                 | 1                  | .. |
 | 1 | cos(1*2\pi/n)     | cos(2*2\pi/n)     | cos(3*2\pi/n\)     | .. |
 | 1 | cos(2*2\pi/n)     | cos(4*2\pi/n)     | cos(6*2\pi/n)      | .. |
 | 1 | cos(3*2\pi/n)     | cos(6*2\pi/n)     | cos(9*2\pi/n)      | .. |
 | 1 | ...               | ...               | ...                | .. |
 | 1 | cos([n-1]*2\pi/n) | cos(2[n-1]2\pi/n) | cos(3[n-1]*2\pi/n) | .. |
+#+END_QUOTE
 
 If your input is over 1 second then this maps to a sampled cosine function of 1Hz, 2Hz, 3Hz, etc..\\
 #+BEGIN_SRC octave
@@ -522,33 +597,46 @@ If your input is over 1 second then this maps to a sampled cosine function of 1H
 | 1 |  0.623 | -0.223 | -0.901 | -0.901 | -0.223 |  0.623 |
 #+END_SRC
 
-However you will notice that there is a symmetry around the middle axis and higher frequencies look identical to lower frequencies (and hence the real values don't form an orthogonal basis)
-- *\xi^{n-k}* = cos((n-k)(2\pi{}/n)+isin((n-k)(2\pi{}/n)=cos(2\pi+2\pi{}k/n)+isin(2\pi+2\pi{}k/n)
-b/c /sin(2\pi+x)=sin(x)/ we simplify
-- = cos(2\pi{}k/n)+isin(2\pi{}k/n) = *\xi^{k}*
-The complex numbers are similarly not orthogonal, just the /n-k^{th}/ column is the negative of the /k^{th}/ column
+You will notice that there is a symmetry around the middle diagonal and higher frequencies look identical to lower frequencies (and hence the real values on their own don't form an orthogonal basis) This is simply because of trigonometry:
+#+BEGIN_QUOTE
+\xi^{n-k}\\
+= cos((n-k)(2\pi{}/n) + i sin((n-k)(2\pi{}/n) \\
+= cos(2\pi-2\pi{}k/n) + i sin(2\pi-2\pi{}k/n)
+#+END_QUOTE
+b/c *sin(2\pi+x)=sin(x)* we simplify further
+#+BEGIN_QUOTE
+= cos(-2\pi{}k/n) + i sin(-2\pi{}k/n) \\
+= cos((k)2\pi{}/n) - i sin((k)2\pi{}/n) \\
+#+END_QUOTE
+So\\
+*\real(\xi^{n-k}) = \real(\xi^{k})*
 
-Since each series (irrespective of the /k/ exponent) has length /n^{1/2}/ (remember that the self-inner norms equal /n/), all the columns of *F* can be normalized in one go by dividing the matrix by /n^{1/2}/. The resulting matrix *(1/n^{1/2})F* is now even better b/c it's orthonormal/unitary. Therefore its inverse is just its Hermitian transpose.
+The complex numbers are similarly not orthogonal, just the *n-k^{th}* column is the negative of the *k^{th}/* column
 
- - [(1/n^{1/2})F]^{-1} = [(1/n^{1/2})F]^{*}
- - F^{-1} = (1/n)F^{*}
- In *F^{-1}F* the diagonal elements will be the column magnitudes, which have been normalized to /1/, and the off diagonal elements will be inner products of orthogonal vectors and therefore /0/ - so the product will give us the identity matrix *I*
+*\image(\xi^{n-k}) = -\image(\xi^{k})*
+
+Since each Fourier vector (irrespective of the *k* exponent) has length *\radic{}n* (remember that the self-inner norms equal *n*), all the columns of *F* can be normalized in one go by dividing the matrix by *\radic{}n*. The resulting matrix *(1/\radic{}n)F* is now even better b/c it's orthonormal/unitary. Therefore its inverse is just its Hermitian transpose.
+#+BEGIN_QUOTE
+[(1/\radic{}n)F]^{-1} = [(1/\radic{}n)F]^{*} \\
+F^{-1} = (1/n)F^{*}
+#+END_QUOTE
+The inverse is easily verified.. The *F^{-1}F* diagonal elements will be self-inner products of the columns, ie. column magnitudes, which have been normalized to unit length (*1*). And the off diagonal elements will be inner products of orthogonal vectors and therefore *0* - so the product will give us the identity matrix *I*
 
 #+BEGIN_SRC octave
   normalizedF = F./sqrt(n) %Normalize the Fourier matrix
   I = normalizedF*normalizedF'
-  real(round(I.*1000)./1000)
+  real(round(I.*1000)./1000) % a bit of rounding...
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC org
-| 0.636 |     0 |     0 |     0 |     0 |     0 |     0 |
-|     0 | 0.636 |     0 |     0 |     0 |     0 |     0 |
-|     0 |     0 | 0.636 |     0 |     0 |     0 |     0 |
-|     0 |     0 |     0 | 0.636 |     0 |     0 |     0 |
-|     0 |     0 |     0 |     0 | 0.636 |     0 |     0 |
-|     0 |     0 |     0 |     0 |     0 | 0.636 |     0 |
-|     0 |     0 |     0 |     0 |     0 |     0 | 0.636 |
+| 1 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| 0 | 0 | 1 | 0 | 0 | 0 | 0 |
+| 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| 0 | 0 | 0 | 0 | 1 | 0 | 0 |
+| 0 | 0 | 0 | 0 | 0 | 1 | 0 |
+| 0 | 0 | 0 | 0 | 0 | 0 | 1 |
 #+END_SRC
 
 * Frequency Space?
@@ -556,9 +644,12 @@ We constructed a very convenient basis that's easily invertible and independent 
 
 ** How does a sinusoidal look in this basis?
 
-If we can carefully pair Euler functions we get back bare sine/cosine functions with no imaginary parts
- - [e^{i\theta} + e^{-i\theta}]/2 = [cos(\theta) + isin(\theta) + cos(-\theta) + isin(-\theta)]/2 = *cos(\theta)*
- - [e^{i\theta} - e^{-i\theta}]/2i = [cos(\theta) + isin(\theta) - cos(-\theta) - isin(-\theta)]/2i = *sin(\theta)*
+If we can carefully pair these Euler exponents we can express a real sine/cosine function:
+#+BEGIN_QUOTE
+[e^{i\theta} + e^{-i\theta}]/2 = [cos(\theta) + isin(\theta) + cos(-\theta) + isin(-\theta)]/2 = *cos(\theta)* \\
+[e^{i\theta} - e^{-i\theta}]/2i = [cos(\theta) + isin(\theta) - cos(-\theta) - isin(-\theta)]/2i = *sin(\theta)*
+#+END_QUOTE
+The imaginary has simply cancelled out
 #+BEGIN_SRC octave
 n=9
 samples=[0:(2*pi/n):(2*pi-(2*pi/n))]
@@ -579,29 +670,33 @@ round((exp(i*samples)+exp(-i*samples))./2.*100)./100
 | 1 | 0.77 | 0.17 | -0.5 | -0.94 | -0.94 | -0.5 | 0.17 | 0.77 |
 #+END_SRC
 
-We can subsitute /\theta/ with /-2\pi{}\phi{}/n/ to get our more familiar Fourier series form:
- - cos(2\pi{}\phi{}/n) = [\xi^{k} + \xi^{-\phi{}}]/2
- - sin(2\pi{}\phi{}/n) = [\xi^{k} - \xi^{-\phi{}}]/2i
+If we subsitute *\theta* with *-2\pi{}\phi{}/n* then we can write sine and cosine in terms of our previous Fourier series terms:
+#+BEGIN_QUOTE
+cos(2\pi{}\phi{}/n) = [\xi^{k} + \xi^{-\phi{}}]/2 \\
+sin(2\pi{}\phi{}/n) = [\xi^{k} - \xi^{-\phi{}}]/2i
+#+END_QUOTE
 #+BEGIN_QUOTE
 *Note*: b/c these are cyclical functions:
  - sin(-\theta) = sin(2\pi - \theta)
  - cos(-\theta) = cos(2\pi - \theta)
  - e^{-i\theta} = e^{i(2\pi-\theta)}
- - \xi^-\phi{} = \xi^{n-\phi{}}
+ - \xi^{-\phi} = \xi^{n-\phi{}}
 #+END_QUOTE
 With some rearranging we can rewrite these as:
- - cos(2\pi\phi) = n*[\xi^{n-\phi} + \xi^{\phi}]/2
- - sin(2\pi\phi) = n*[\xi^{n-\phi} - \xi^{\phi}]/2i
+#+BEGIN_QUOTE
+cos(2\pi\phi) = n*[\xi^{n-\phi} + \xi^{\phi}]/2 \\
+sin(2\pi\phi) = n*[\xi^{n-\phi} - \xi^{\phi}]/2i
+#+END_QUOTE
 
-And these now will correspond to basis vectors in our fourier matrix.
-
-For instance if /\phi/ = 2 we can pick an /x/
-- x = [ 0 0 n/2 0 0 .. 0 0 n/2 0 0]_{1,n}
+Each one of these is just the sum of two columns in our fourier matrix.
 So that:
 - cos(2\pi * 2) = (1/n)F^{*}x^{T}
+
+For instance if *\phi* = 2 we would pick *x* to be
+- x = [ 0 0 n/2 0 0 .. 0 0 n/2 0 0]_{1,n}
 #+BEGIN_SRC octave
-    quickRound(
-	real((fourierMatrix(n)'*[0 0 n/2 0 0 0 0 n/2 0].')./n).')
+  quickRound(
+      real((fourierMatrix(n)'*[0 0 n/2 0 0 0 0 n/2 0].')./n).')
 #+END_SRC
 #+RESULTS:
 #+BEGIN_SRC org
@@ -619,9 +714,12 @@ quickRound(
 #+END_SRC
 
 Similarly with the sine function, except with an extra minus sign:
-- y = [ 0 0 -n/2i 0 0 .. 0 0 n/2i 0 0]_{1,n}
+- y = [ 0 0 -n/2i 0 0 .. 0 0 n/2i 0]_{1,n}
 So that:
 - sin(2\pi * 2) = (1/n)F^{*}y^{T}
+#+BEGIN_QUOTE
+*Note*: The indeces are a shifted b/c the first Fourier vector is for *\phi{}=0* and the last is for *\phi{}=n-1*
+#+END_QUOTE
 #+BEGIN_SRC octave
 quickRound(
   (real(fourierMatrix(n)'*[0 0 -n/2i 0 0 0 0 n/2i 0].'./n)'))
@@ -656,12 +754,36 @@ quickRound(
 | -0+4.5i |
 | 0-0i    |
 #+END_SRC
+For larger values it becomes difficult to look at the numbers - but a plot can make the effect aparant
+#+BEGIN_SRC octave :results silent
+  phi = 2;
+  n = 50;
+  freqCoord = zeros(1,n);
+  freqCoord(phi-1) = n/2; % Some offset issue..
+  freqCoord(n-phi-1) = n/2;
+  scatter([1:n],freqCoord)
+  hold on;
+  axis "off"
+  print "-S720,160" "freqCoord.svg"
+  hold off;
+#+END_SRC
+[[./freqCoord.svg]]
+
+#+BEGIN_SRC octave :results silent
+  scatter([1:n], (real(fourierMatrix(n)'*freqCoord')))
+  hold on;
+  axis "off"
+  print "-S720,160" "afterFourierMatrix.svg"
+  hold off;
+#+END_SRC
+[[./afterFourierMatrix.svg]]
 
 ** How does a phase shift look in this basis?
 Notice how the cosines have real coordinates and the sines have imaginary coordinates. Combining the two, each complex coordinate in the fourier basis generates one of each and the result is purely real
 - v = \real(v) + \image(v)  ....  (technically this is not a coordinate b/c it will have a mirror at n-k)
 - F^{*}v/n = F^{*}\real(v)/n + F^{*}\image(v)/n = \alpha sin(...) + \beta cos(...)
 #+BEGIN_SRC octave :results silent
+n = 9
 v = [0 0 n/2 0 0 0 0 n/2 0] .+ [0 0 -n/2i 0 0 0 0 n/2i 0]
 #+END_SRC
 #+BEGIN_SRC octave
@@ -744,8 +866,8 @@ And we can also determine the input's phase shift (though this is typically less
 |  0.067 |
 |  1.571 |
 |  0.369 |
-| -0.983 |
-|  0.219 |
+| -0.965 |
+|  0.322 |
 | -1.125 |
 | -1.571 |
 | -0.632 |
